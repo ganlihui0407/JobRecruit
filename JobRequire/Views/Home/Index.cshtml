@@ -1,0 +1,340 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Hero Section -->
+<section class="py-5 mt-3">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+            <h1 style="font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1.5rem;">
+                Find Your 
+                <span style="color: var(--primary-color);">Perfect Match</span>
+                <br>in the Job Market
+            </h1>
+            <p class="helper-text mb-4" style="font-size: 1.125rem;">
+                Connect with top employers and discover opportunities tailored to your skills. 
+                Whether you're starting fresh or taking the next step, we're here to help.
+            </p>
+            
+            <!-- Search Form -->
+            <form asp-controller="Jobs" asp-action="Index" method="get" class="mb-4">
+                <div class="card p-3" style="border: 2px solid var(--border-color);">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted mb-1">What</label>
+                            <input type="text" class="form-control" name="Keyword" 
+                                   placeholder="Job title, keywords..." />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted mb-1">Where</label>
+                            <input type="text" class="form-control" name="Location" 
+                                   placeholder="City, state, or remote" />
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Stats -->
+            <div class="d-flex gap-4 flex-wrap">
+                <div class="d-flex align-items-center">
+                    <div class="me-2" style="width: 40px; height: 40px; background: var(--bg-warm); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-briefcase" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div>
+                        <strong style="font-size: 1.25rem;">10,000+</strong>
+                        <small class="text-muted d-block">Jobs</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="me-2" style="width: 40px; height: 40px; background: var(--bg-warm); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-building" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div>
+                        <strong style="font-size: 1.25rem;">500+</strong>
+                        <small class="text-muted d-block">Companies</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="me-2" style="width: 40px; height: 40px; background: var(--bg-warm); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-people" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div>
+                        <strong style="font-size: 1.25rem;">50,000+</strong>
+                        <small class="text-muted d-block">Candidates</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card p-4 p-lg-5 text-center" style="background: linear-gradient(135deg, var(--bg-warm) 0%, rgba(166, 124, 82, 0.1) 100%); border: 1px solid var(--primary-lighter);">
+                <i class="bi bi-people-fill" style="font-size: 5rem; color: var(--primary-color); opacity: 0.9;"></i>
+                <h4 class="mt-3 mb-2" style="color: var(--primary-dark);">Start Your Journey</h4>
+                <p class="text-muted mb-0">
+                    Join thousands of professionals who found their dream career through JobRecruit
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5">
+    <div class="text-center mb-5">
+        <h2 class="page-title">How It Works</h2>
+        <p class="helper-text">Get started in just three simple steps</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4" style="border-top: 4px solid var(--primary-color);">
+                <div class="card-body">
+                    <div class="mb-3" style="width: 64px; height: 64px; background: var(--bg-warm); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">1</span>
+                    </div>
+                    <h5 class="mb-2">Create Account</h5>
+                    <p class="text-muted mb-0">
+                        Sign up for free and build your professional profile in minutes.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4" style="border-top: 4px solid var(--primary-color);">
+                <div class="card-body">
+                    <div class="mb-3" style="width: 64px; height: 64px; background: var(--bg-warm); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">2</span>
+                    </div>
+                    <h5 class="mb-2">Search Jobs</h5>
+                    <p class="text-muted mb-0">
+                        Browse thousands of listings and find opportunities that match your skills.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4" style="border-top: 4px solid var(--primary-color);">
+                <div class="card-body">
+                    <div class="mb-3" style="width: 64px; height: 64px; background: var(--bg-warm); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">3</span>
+                    </div>
+                    <h5 class="mb-2">Apply & Get Hired</h5>
+                    <p class="text-muted mb-0">
+                        Submit applications with one click and start your new career journey.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Job Categories Section -->
+<section class="py-5">
+    <div class="text-center mb-5">
+        <h2 class="page-title">Popular Categories</h2>
+        <p class="helper-text">Explore opportunities across various industries</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Technology" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-code-slash" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Technology</h6>
+                    <small class="text-muted">1,234 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Finance" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-graph-up" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Finance</h6>
+                    <small class="text-muted">856 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Marketing" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-megaphone" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Marketing</h6>
+                    <small class="text-muted">654 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Healthcare" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-heart-pulse" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Healthcare</h6>
+                    <small class="text-muted">543 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Education" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-mortarboard" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Education</h6>
+                    <small class="text-muted">432 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Engineering" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-gear" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Engineering</h6>
+                    <small class="text-muted">321 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Design" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-palette" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Design</h6>
+                    <small class="text-muted">287 jobs</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Jobs" asp-action="Index" asp-route-categoryFilter="Customer Service" class="card h-100 text-decoration-none">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-headset" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.75rem; display: block;"></i>
+                    <h6 class="mb-1">Customer Service</h6>
+                    <small class="text-muted">198 jobs</small>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Jobs Section -->
+<section class="py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title mb-1">Featured Jobs</h2>
+            <p class="helper-text mb-0">Latest opportunities from top companies</p>
+        </div>
+        <a asp-controller="Jobs" asp-action="Index" class="btn btn-outline-primary">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    @if (Model.FeaturedJobs.Any())
+    {
+    <div class="row g-4">
+            @foreach (var featured in Model.FeaturedJobs)
+            {
+                var job = featured.Job;
+                var badgeClass = job.JobType switch
+                {
+                    "Full-Time" => "bg-success",
+                    "Part-Time" => "bg-warning text-dark",
+                    "Contract" => "bg-info",
+                    "Internship" => "bg-primary",
+                    _ => "bg-secondary"
+                };
+        <div class="col-md-6">
+            <div class="card job-card h-100">
+                <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-light text-primary small">@featured.Category</span>
+                                <a asp-controller="Jobs" asp-action="Index" asp-route-Category="@featured.Category" class="btn btn-sm btn-outline-primary">
+                                    View more <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                                    <h5 class="job-title mb-1">
+                                        <a asp-controller="Jobs" asp-action="Details" asp-route-id="@job.JobVacancyId" class="text-decoration-none text-dark">
+                                            @job.JobTitle
+                                        </a>
+                                        @if (featured.IsPopular)
+                                        {
+                                            <span class="badge bg-warning text-dark ms-1" title="Popular Job">
+                                                <i class="bi bi-star-fill"></i> Popular
+                                            </span>
+                                        }
+                                    </h5>
+                            <p class="company-name mb-0">
+                                        <i class="bi bi-building me-1"></i>@(job.EmployerProfile?.CompanyName ?? "Unknown Company")
+                            </p>
+                        </div>
+                                <span class="badge @badgeClass">@job.JobType</span>
+                    </div>
+                    <p class="text-muted text-truncate-2 mb-3">
+                                @(job.Description?.Length > 150 ? job.Description.Substring(0, 150) + "..." : job.Description)
+                    </p>
+                    <div class="job-meta">
+                                <span><i class="bi bi-geo-alt"></i> @job.Location</span>
+                                @if (job.SalaryMin.HasValue || job.SalaryMax.HasValue)
+                                {
+                                    <span>
+                                        <i class="bi bi-cash"></i>
+                                        @if (job.SalaryMin.HasValue && job.SalaryMax.HasValue)
+                                        {
+                                            @:RM @job.SalaryMin.Value.ToString("N0") - RM @job.SalaryMax.Value.ToString("N0")
+                                        }
+                                        else if (job.SalaryMin.HasValue)
+                                        {
+                                            @:From RM @job.SalaryMin.Value.ToString("N0")
+                                        }
+                                        else
+                                        {
+                                            @:Up to RM @job.SalaryMax!.Value.ToString("N0")
+                                        }
+                                    </span>
+                                }
+                                @if (featured.InterestedCount > 0)
+                                {
+                                    <span class="text-danger">
+                                        <i class="bi bi-fire"></i> @featured.InterestedCount interested
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <!-- View All Jobs Button -->
+        <div class="text-center mt-4">
+            <a asp-controller="Jobs" asp-action="Index" class="btn btn-primary btn-lg">
+                <i class="bi bi-briefcase me-2"></i>View All Jobs
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-briefcase display-4 text-muted"></i>
+            <h5 class="mt-3 text-muted">No featured jobs available</h5>
+            <p class="text-muted">Check back soon for new opportunities!</p>
+        </div>
+    }
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 mb-4">
+    <div class="card text-center" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); border: none;">
+        <div class="card-body p-5 text-white">
+            <h2 class="fw-bold mb-3">Ready to Take the Next Step?</h2>
+            <p class="mb-4" style="font-size: 1.125rem; opacity: 0.9;">
+                Join thousands of professionals who have found their dream jobs through JobRecruit.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg">
+                    <i class="bi bi-person-plus me-2"></i>Create Account
+                </a>
+                <a asp-controller="Jobs" asp-action="Index" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-search me-2"></i>Browse Jobs
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

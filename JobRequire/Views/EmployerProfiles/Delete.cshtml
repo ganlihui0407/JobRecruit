@@ -1,0 +1,46 @@
+@model EmployerProfileViewModel
+@{
+    ViewData["Title"] = "Delete Company Profile";
+}
+
+<div class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Delete Company Profile</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All associated job vacancies will also be deleted.
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>@Model.CompanyName</h5>
+                        @if (!string.IsNullOrEmpty(Model.Industry))
+                        {
+                            <p class="text-secondary mb-1"><i class="bi bi-tag me-2"></i>@Model.Industry</p>
+                        }
+                        <p class="text-secondary mb-0">
+                            <i class="bi bi-briefcase me-2"></i>@Model.JobVacanciesCount job vacancies will be deleted
+                        </p>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="EmployerProfileId" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-2"></i>Yes, Delete Profile
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.EmployerProfileId" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

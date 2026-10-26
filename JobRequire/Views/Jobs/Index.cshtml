@@ -1,0 +1,598 @@
+@model JobSearchResultViewModel
+@{
+    ViewData["Title"] = "Find Jobs";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    TempData.Remove("Error");
+}
+
+<div class="py-4">
+    <!-- Hero Search Section -->
+    <div class="bg-primary text-white rounded-4 p-4 p-md-5 mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="bi bi-search me-2"></i>Find Your Dream Job
+                </h1>
+                <p class="lead mb-0">
+                    Browse through @Model.TotalCount+ job opportunities from top companies
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm sticky-lg-top" style="top: 80px;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="searchForm">
+                        <!-- Keyword Search -->
+                        <div class="mb-3">
+                            <label for="keyword" class="form-label">Keyword</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="keyword" name="Keyword" 
+                                       value="@Model.Filters.Keyword" placeholder="Job title, skills, company...">
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <select class="form-select" id="location" name="Location">
+                                <option value="">All Locations</option>
+                                @foreach (var loc in Model.Locations)
+                                {
+                                    if (Model.Filters.Location == loc)
+                                    {
+                                        <option value="@loc" selected>@loc</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@loc">@loc</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="Category">
+                                <option value="">All Categories</option>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    if (Model.Filters.Category == cat)
+                                    {
+                                        <option value="@cat" selected>@cat</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@cat">@cat</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Job Type -->
+                        <div class="mb-3">
+                            <label for="jobType" class="form-label">Job Type</label>
+                            <select class="form-select" id="jobType" name="JobType">
+                                <option value="">All Types</option>
+                                @foreach (var type in Model.JobTypes)
+                                {
+                                    if (Model.Filters.JobType == type)
+                                    {
+                                        <option value="@type" selected>@type</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@type">@type</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Salary Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Salary Range</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="minSalary" name="MinSalary" 
+                                           value="@Model.Filters.MinSalary" placeholder="Min">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="maxSalary" name="MaxSalary" 
+                                           value="@Model.Filters.MaxSalary" placeholder="Max">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sort By -->
+                        <div class="mb-3">
+                            <label for="sortBy" class="form-label">Sort By</label>
+                            <select class="form-select" id="sortBy" name="SortBy">
+                                @{
+                                    var sortBy = Model.Filters.SortBy ?? "";
+                                }
+                                @if (string.IsNullOrEmpty(sortBy))
+                                {
+                                    <option value="" selected>🔥 Most Popular</option>
+                                }
+                                else
+                                {
+                                    <option value="">🔥 Most Popular</option>
+                                }
+                                @if (sortBy == "newest")
+                                {
+                                    <option value="newest" selected>Newest First</option>
+                                }
+                                else
+                                {
+                                    <option value="newest">Newest First</option>
+                                }
+                                @if (sortBy == "oldest")
+                                {
+                                    <option value="oldest" selected>Oldest First</option>
+                                }
+                                else
+                                {
+                                    <option value="oldest">Oldest First</option>
+                                }
+                                @if (sortBy == "salary_high")
+                                {
+                                    <option value="salary_high" selected>Salary: High to Low</option>
+                                }
+                                else
+                                {
+                                    <option value="salary_high">Salary: High to Low</option>
+                                }
+                                @if (sortBy == "salary_low")
+                                {
+                                    <option value="salary_low" selected>Salary: Low to High</option>
+                                }
+                                else
+                                {
+                                    <option value="salary_low">Salary: Low to High</option>
+                                }
+                                @if (sortBy == "title")
+                                {
+                                    <option value="title" selected>Job Title</option>
+                                }
+                                else
+                                {
+                                    <option value="title">Job Title</option>
+                                }
+                                @if (sortBy == "company")
+                                {
+                                    <option value="company" selected>Company Name</option>
+                                }
+                                else
+                                {
+                                    <option value="company">Company Name</option>
+                                }
+                                @if (sortBy == "closing")
+                                {
+                                    <option value="closing" selected>Closing Date</option>
+                                }
+                                else
+                                {
+                                    <option value="closing">Closing Date</option>
+                                }
+                            </select>
+                        </div>
+
+                        <input type="hidden" id="pageNumber" name="PageNumber" value="1">
+                        <input type="hidden" id="pageSize" name="PageSize" value="@Model.PageSize">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Search
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="clearFilters">
+                                <i class="bi bi-x-circle me-2"></i>Clear Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Listings -->
+        <div class="col-lg-9">
+            <!-- Results Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="text-muted" id="resultsCount">
+                        Showing <strong>@((Model.PageNumber - 1) * Model.PageSize + 1)</strong> - 
+                        <strong>@Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)</strong> 
+                        of <strong>@Model.TotalCount</strong> jobs
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted d-none d-md-inline">View:</span>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" id="viewList" title="List View">
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="viewGrid" title="Grid View">
+                            <i class="bi bi-grid"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="text-center py-5 d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Searching for jobs...</p>
+            </div>
+
+            <!-- Job List Container -->
+            <div id="jobListContainer">
+                <partial name="_JobListPartial" model="Model" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let searchTimeout;
+            let currentView = 'list';
+            const isAuthenticated = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+            const isJobSeeker = @(User.IsInRole("JobSeeker") ? "true" : "false");
+
+            // Live search - debounced
+            $('#keyword').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    $('#pageNumber').val(1);
+                    performSearch();
+                }, 500);
+            });
+
+            // Filter changes trigger search
+            $('#location, #category, #jobType, #sortBy').on('change', function() {
+                $('#pageNumber').val(1);
+                performSearch();
+            });
+
+            // Salary range - debounced
+            $('#minSalary, #maxSalary').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    $('#pageNumber').val(1);
+                    performSearch();
+                }, 500);
+            });
+
+            // Form submit
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                $('#pageNumber').val(1);
+                performSearch();
+            });
+
+            // Clear filters
+            $('#clearFilters').on('click', function() {
+                $('#keyword').val('');
+                $('#location').val('');
+                $('#category').val('');
+                $('#jobType').val('');
+                $('#minSalary').val('');
+                $('#maxSalary').val('');
+                $('#sortBy').val('newest');
+                $('#pageNumber').val(1);
+                performSearch();
+            });
+
+            // View toggle
+            $('#viewList').on('click', function() {
+                currentView = 'list';
+                $(this).addClass('active');
+                $('#viewGrid').removeClass('active');
+                $('#jobListContainer').removeClass('grid-view').addClass('list-view');
+            });
+
+            $('#viewGrid').on('click', function() {
+                currentView = 'grid';
+                $(this).addClass('active');
+                $('#viewList').removeClass('active');
+                $('#jobListContainer').removeClass('list-view').addClass('grid-view');
+            });
+
+            // Pagination click handler (delegated)
+            $(document).on('click', '.pagination-link', function(e) {
+                e.preventDefault();
+                var page = $(this).data('page');
+                $('#pageNumber').val(page);
+                performSearch();
+                $('html, body').animate({ scrollTop: 0 }, 300);
+            });
+
+            // Bookmark button handler (delegated)
+            $(document).on('click', '.btn-bookmark', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!isAuthenticated) {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (!isJobSeeker) {
+                    showToast('Only job seekers can bookmark jobs.', 'warning');
+                    return;
+                }
+
+                var btn = $(this);
+                var jobId = btn.data('job-id');
+                var icon = btn.find('i');
+
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/api/jobs/bookmark',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ jobVacancyId: jobId }),
+                    success: function(response) {
+                        if (response.success) {
+                            if (response.isBookmarked) {
+                                icon.removeClass('bi-bookmark').addClass('bi-bookmark-fill');
+                                btn.addClass('bookmarked');
+                            } else {
+                                icon.removeClass('bi-bookmark-fill').addClass('bi-bookmark');
+                                btn.removeClass('bookmarked');
+                            }
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.message, 'danger');
+                        }
+                    },
+                    error: function() {
+                        showToast('An error occurred. Please try again.', 'danger');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Interest button handler (delegated)
+            $(document).on('click', '.btn-interest', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!isAuthenticated) {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (!isJobSeeker) {
+                    showToast('Only job seekers can mark interest.', 'warning');
+                    return;
+                }
+
+                var btn = $(this);
+                var jobId = btn.data('job-id');
+                var icon = btn.find('i');
+                var countSpan = btn.find('.interest-count');
+
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/api/jobs/interest',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ jobVacancyId: jobId }),
+                    success: function(response) {
+                        if (response.success) {
+                            // Update button state
+                            if (response.isInterested) {
+                                icon.removeClass('bi-heart').addClass('bi-heart-fill');
+                                btn.addClass('interested').removeClass('btn-outline-danger');
+                            } else {
+                                icon.removeClass('bi-heart-fill').addClass('bi-heart');
+                                btn.removeClass('interested').addClass('btn-outline-danger');
+                            }
+                            
+                            // Update count on button
+                            countSpan.text(response.interestedCount);
+                            
+                            // Update the badge count in job meta section
+                            var badge = $('[data-job-interest-badge="' + jobId + '"]');
+                            if (response.interestedCount > 0) {
+                                if (badge.length) {
+                                    badge.find('.badge-interest-count').text(response.interestedCount);
+                                } else {
+                                    // Create badge if it doesn't exist
+                                    var jobCard = btn.closest('.job-card');
+                                    var badgeContainer = jobCard.find('.d-flex.flex-wrap.gap-2.mb-2');
+                                    var newBadge = $('<span class="badge bg-danger-subtle text-danger" data-job-interest-badge="' + jobId + '"><i class="bi bi-fire me-1"></i><span class="badge-interest-count">' + response.interestedCount + '</span> interested</span>');
+                                    badgeContainer.find('.badge.bg-warning-subtle').after(newBadge);
+                                }
+                            } else {
+                                badge.remove();
+                            }
+                            
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.message, 'danger');
+                        }
+                    },
+                    error: function() {
+                        showToast('An error occurred. Please try again.', 'danger');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+
+            function performSearch() {
+                var formData = $('#searchForm').serialize();
+                
+                $('#loadingIndicator').removeClass('d-none');
+                $('#jobListContainer').addClass('opacity-50');
+
+                $.ajax({
+                    url: '/Jobs/JobListPartial',
+                    method: 'GET',
+                    data: formData,
+                    success: function(html) {
+                        $('#jobListContainer').html(html);
+                        updateResultsCount();
+                        
+                        // Update URL without reload
+                        var newUrl = '/Jobs?' + formData;
+                        history.pushState(null, '', newUrl);
+                    },
+                    error: function() {
+                        showToast('An error occurred while searching. Please try again.', 'danger');
+                    },
+                    complete: function() {
+                        $('#loadingIndicator').addClass('d-none');
+                        $('#jobListContainer').removeClass('opacity-50');
+                    }
+                });
+            }
+
+            function updateResultsCount() {
+                // This will be updated by the partial view
+            }
+
+            function showToast(message, type) {
+                var toastHtml = `
+                    <div class="toast align-items-center text-bg-${type} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                var toastContainer = $('#toastContainer');
+                if (toastContainer.length === 0) {
+                    $('body').append('<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
+                    toastContainer = $('#toastContainer');
+                }
+                
+                var toast = $(toastHtml);
+                toastContainer.append(toast);
+                var bsToast = new bootstrap.Toast(toast[0], { delay: 3000 });
+                bsToast.show();
+                
+                toast.on('hidden.bs.toast', function() {
+                    $(this).remove();
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .job-card {
+            transition: all 0.2s ease;
+            border: 1px solid #e9ecef;
+        }
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border-color: var(--bs-primary);
+        }
+        .company-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 5px;
+        }
+        .company-logo-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .btn-bookmark {
+            transition: all 0.2s ease;
+        }
+        .btn-bookmark:hover, .btn-bookmark.bookmarked {
+            color: #f59e0b;
+        }
+        .btn-bookmark.bookmarked i {
+            color: #f59e0b;
+        }
+        /* Interest button styles */
+        .btn-interest {
+            transition: all 0.2s ease;
+        }
+        .btn-interest.interested {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-interest.interested:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+        .btn-interest .interest-count {
+            margin-left: 4px;
+            font-weight: 600;
+        }
+        .btn-interest-disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .badge-closing-soon {
+            animation: pulse 2s infinite;
+        }
+        @@keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .grid-view .job-card {
+            height: 100%;
+        }
+        .grid-view .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .grid-view .col-12 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        @@media (max-width: 768px) {
+            .grid-view .col-12 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+}
+

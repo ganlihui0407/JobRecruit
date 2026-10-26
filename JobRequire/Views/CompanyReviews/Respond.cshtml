@@ -1,0 +1,138 @@
+@model JobRequire.ViewModels.RespondToReportViewModel
+@{
+    ViewData["Title"] = "Respond to Review Report";
+}
+
+<div class="py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Companies" asp-action="Index"><i class="bi bi-building me-1"></i>Companies</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Respond to Report</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Warning Alert -->
+            <div class="alert alert-warning mb-4">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-exclamation-triangle fs-4 me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-1">Your Review Has Been Reported</h5>
+                        <p class="mb-2">
+                            The employer has reported your review for @Model.CompanyName. 
+                            You have <strong>@Model.DaysRemaining @(Model.DaysRemaining == 1 ? "day" : "days")</strong> to respond.
+                        </p>
+                        <small>
+                            <strong>Important:</strong> If you don't respond within 3 days of the report, 
+                            your review will be automatically hidden from public view.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Original Review Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-quote me-2 text-primary"></i>Your Original Review
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="text-warning me-2">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi @(i <= Model.Rating ? "bi-star-fill" : "bi-star")"></i>
+                            }
+                        </div>
+                        <span class="fw-semibold">@Model.Rating out of 5</span>
+                    </div>
+                    <div class="p-3 bg-light rounded">
+                        <p class="mb-0" style="white-space: pre-line;">@Model.OriginalComment</p>
+                    </div>
+                    @if (Model.ReportedAt.HasValue)
+                    {
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-flag me-1"></i>Reported on @Model.ReportedAt.Value.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")
+                        </small>
+                    }
+                </div>
+            </div>
+
+            <!-- Response Form -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-reply me-2 text-primary"></i>Your Response
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Respond" asp-route-reviewId="@Model.ReviewId" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ReviewId" />
+                        <input type="hidden" asp-for="CompanyName" />
+                        <input type="hidden" asp-for="OriginalComment" />
+                        <input type="hidden" asp-for="Rating" />
+
+                        <div class="mb-4">
+                            <label asp-for="ResponseComment" class="form-label fw-semibold">
+                                Explain why your review should remain visible <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="ResponseComment" class="form-control" rows="5" 
+                                      placeholder="Provide additional context or clarification about your review. Explain why you believe your review is fair and accurate."></textarea>
+                            <span asp-validation-for="ResponseComment" class="text-danger"></span>
+                            <small class="text-muted">
+                                <span id="charCount">0</span>/1000 characters (minimum 10)
+                            </small>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>What Happens Next?</h6>
+                            <ul class="mb-0 small">
+                                <li>Once you submit your response, your review will remain visible</li>
+                                <li>Your response will be displayed alongside your original review</li>
+                                <li>The review will stay marked as "under review" to indicate it was reported</li>
+                                <li>This helps maintain transparency for other users</li>
+                            </ul>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>Submit Response
+                            </button>
+                            <a asp-controller="Companies" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Character counter
+            const responseTextarea = document.getElementById('ResponseComment');
+            const charCount = document.getElementById('charCount');
+            
+            responseTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+            
+            // Initialize char count
+            charCount.textContent = responseTextarea.value.length;
+        });
+    </script>
+}
+
+
+

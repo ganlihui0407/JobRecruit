@@ -1,0 +1,255 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+            <!-- Page Header -->
+            <div class="text-center mb-4">
+                <h1 class="page-title">Create Your Account</h1>
+                <p class="helper-text mb-0">
+                    Join thousands of professionals connecting with opportunities every day.
+                    <br>Registration takes just 2 minutes.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-4 p-lg-5">
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Step 1: Choose Account Type -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <span class="step-number">1</span>
+                                Choose Your Account Type
+                            </div>
+                            <p class="form-section-description">
+                                Select how you'll use JobRecruit. This helps us personalize your experience.
+                            </p>
+                            
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="role-card" id="jobSeekerCard" onclick="selectRole('JobSeeker')">
+                                        <input type="radio" class="d-none" name="Role" id="roleJobSeeker" 
+                                               value="JobSeeker" checked="@(Model.Role == "JobSeeker" || string.IsNullOrEmpty(Model.Role))">
+                                        <div class="role-icon">
+                                            <i class="bi bi-person-badge"></i>
+                                        </div>
+                                        <div class="role-title">Job Seeker</div>
+                                        <div class="role-description">Find your dream job</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="role-card" id="employerCard" onclick="selectRole('Employer')">
+                                        <input type="radio" class="d-none" name="Role" id="roleEmployer" 
+                                               value="Employer" checked="@(Model.Role == "Employer")">
+                                        <div class="role-icon">
+                                            <i class="bi bi-building"></i>
+                                        </div>
+                                        <div class="role-title">Employer</div>
+                                        <div class="role-description">Hire talented people</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+
+                        <!-- Step 2: Your Details -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <span class="step-number">2</span>
+                                Your Details
+                            </div>
+                            
+                            <!-- Job Seeker Fields -->
+                            <div id="jobSeekerFields">
+                                <p class="form-section-description">
+                                    Tell us about yourself so employers can find you.
+                                </p>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="FullName" class="form-label">
+                                        Full Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="FullName" class="form-control" placeholder="e.g., John Smith" id="FullName" />
+                                    <span asp-validation-for="FullName" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                    <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="e.g., +1 234 567 8900" />
+                                    <div class="form-text">Optional - Helps employers contact you directly</div>
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Summary" class="form-label">Professional Summary</label>
+                                    <textarea asp-for="Summary" class="form-control" rows="3" 
+                                              placeholder="Briefly describe your experience and career goals..."></textarea>
+                                    <div class="form-text">Optional - You can add this later in your profile</div>
+                                    <span asp-validation-for="Summary" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- Employer Fields -->
+                            <div id="employerFields" style="display: none;">
+                                <p class="form-section-description">
+                                    Tell us about your company to start posting jobs.
+                                </p>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="CompanyName" class="form-label">
+                                        Company Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="CompanyName" class="form-control" placeholder="e.g., Acme Corporation" id="CompanyName" />
+                                    <span asp-validation-for="CompanyName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Account Credentials -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <span class="step-number">3</span>
+                                Account Credentials
+                            </div>
+                            <p class="form-section-description">
+                                Create your login credentials. You'll use these to access your account.
+                            </p>
+
+                            <div class="mb-3">
+                                <label asp-for="Username" class="form-label">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Username" class="form-control" placeholder="Choose a unique username" />
+                                <div class="form-text">Letters, numbers, and underscores only</div>
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">
+                                    Email Address <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Email" class="form-control" type="email" placeholder="you@example.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Password" class="form-label">
+                                        Password <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="Password" class="form-control" type="password" placeholder="Create password" />
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('Password')">
+                                            <i class="bi bi-eye" id="Password-icon"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">At least 8 characters</div>
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="ConfirmPassword" class="form-label">
+                                        Confirm Password <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm password" />
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('ConfirmPassword')">
+                                            <i class="bi bi-eye" id="ConfirmPassword-icon"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms Agreement -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input asp-for="AgreeToTerms" class="form-check-input" type="checkbox" />
+                                <label asp-for="AgreeToTerms" class="form-check-label">
+                                    I agree to the <a asp-controller="Home" asp-action="Terms" target="_blank">Terms of Service</a> 
+                                    and <a asp-controller="Home" asp-action="Privacy" target="_blank">Privacy Policy</a>
+                                </label>
+                            </div>
+                            <span asp-validation-for="AgreeToTerms" class="text-danger"></span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+
+                        <div class="text-center">
+                            <span class="text-muted">Already have an account?</span>
+                            <a asp-action="Login" class="fw-semibold">Sign in</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function selectRole(role) {
+            // Update radio buttons
+            document.getElementById('roleJobSeeker').checked = (role === 'JobSeeker');
+            document.getElementById('roleEmployer').checked = (role === 'Employer');
+            
+            // Update card styles
+            document.getElementById('jobSeekerCard').classList.toggle('selected', role === 'JobSeeker');
+            document.getElementById('employerCard').classList.toggle('selected', role === 'Employer');
+            
+            // Toggle fields
+            toggleRoleFields();
+        }
+        
+        function toggleRoleFields() {
+            var isEmployer = document.getElementById('roleEmployer').checked;
+            var jobSeekerFields = document.getElementById('jobSeekerFields');
+            var employerFields = document.getElementById('employerFields');
+            var fullNameInput = document.getElementById('FullName');
+            var companyNameInput = document.getElementById('CompanyName');
+            
+            jobSeekerFields.style.display = isEmployer ? 'none' : 'block';
+            employerFields.style.display = isEmployer ? 'block' : 'none';
+            
+            // Toggle required attributes based on role
+            if (isEmployer) {
+                if (fullNameInput) fullNameInput.removeAttribute('required');
+                if (companyNameInput) companyNameInput.setAttribute('required', 'required');
+            } else {
+                if (fullNameInput) fullNameInput.setAttribute('required', 'required');
+                if (companyNameInput) companyNameInput.removeAttribute('required');
+            }
+        }
+
+        function togglePassword(fieldId) {
+            var field = document.getElementById(fieldId);
+            var icon = document.getElementById(fieldId + '-icon');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            var isEmployer = document.getElementById('roleEmployer').checked;
+            document.getElementById('jobSeekerCard').classList.toggle('selected', !isEmployer);
+            document.getElementById('employerCard').classList.toggle('selected', isEmployer);
+            toggleRoleFields();
+        });
+    </script>
+}

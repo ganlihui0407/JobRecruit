@@ -1,0 +1,78 @@
+@model EmployerProfileViewModel
+@{
+    ViewData["Title"] = "Create Company Profile";
+}
+
+<div class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-building me-2"></i>Create Company Profile</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="UserId" />
+
+                        <div class="mb-3">
+                            <label asp-for="CompanyName" class="form-label"></label>
+                            <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" />
+                            <span asp-validation-for="CompanyName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Industry" class="form-label"></label>
+                            <select asp-for="Industry" class="form-select">
+                                <option value="">Select Industry</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Education">Education</option>
+                                <option value="Manufacturing">Manufacturing</option>
+                                <option value="Retail">Retail</option>
+                                <option value="Hospitality">Hospitality</option>
+                                <option value="Construction">Construction</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Industry" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CompanyAddress" class="form-label"></label>
+                            <textarea asp-for="CompanyAddress" class="form-control" rows="2" 
+                                      placeholder="Enter company address"></textarea>
+                            <span asp-validation-for="CompanyAddress" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CompanyLogoFile" class="form-label"></label>
+                            <input asp-for="CompanyLogoFile" type="file" class="form-control" accept="image/*" />
+                            <div class="form-text">Recommended size: 200x200 pixels. Max 2MB.</div>
+                            <span asp-validation-for="CompanyLogoFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="CompanyDescription" class="form-label"></label>
+                            <textarea asp-for="CompanyDescription" class="form-control" rows="5" 
+                                      placeholder="Tell job seekers about your company..."></textarea>
+                            <span asp-validation-for="CompanyDescription" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>Create Profile
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

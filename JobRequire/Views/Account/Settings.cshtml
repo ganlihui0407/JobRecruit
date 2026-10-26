@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+<div class="py-4">
+    <h1 class="fw-bold mb-4">Account Settings</h1>
+
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#security" data-bs-toggle="pill">
+                            <i class="bi bi-shield-lock me-2"></i>Security
+                        </a>
+                        <a class="nav-link" asp-action="Profile">
+                            <i class="bi bi-person me-2"></i>Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="security">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Security Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">Change Password</h6>
+                            <p class="text-secondary">
+                                Update your password regularly to keep your account secure.
+                            </p>
+                            <a asp-action="ChangePassword" class="btn btn-outline-primary">
+                                <i class="bi bi-key me-2"></i>Change Password
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

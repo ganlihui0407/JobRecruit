@@ -1,0 +1,232 @@
+@model JobRequire.ViewModels.ResumeViewViewModel
+@{
+    ViewData["Title"] = $"Resume - {Model.FullName}";
+    Layout = "_Layout";
+}
+
+<div class="py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title mb-1">
+                <i class="bi bi-file-person me-2"></i>Applicant Resume
+            </h2>
+            <p class="helper-text mb-0">Read-only view of the applicant's website resume</p>
+        </div>
+        <div>
+            <a asp-controller="Resumes" asp-action="DownloadPdf" asp-route-jobSeekerId="@Model.JobSeekerProfileId" 
+               class="btn btn-danger me-2">
+                <i class="bi bi-file-pdf me-1"></i>Download PDF
+            </a>
+            <button type="button" class="btn btn-outline-secondary" onclick="window.close();">
+                <i class="bi bi-x-lg me-1"></i>Close
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Profile Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                        {
+                            <img src="@Model.ProfilePhoto" alt="@Model.FullName" 
+                                 class="rounded-circle me-4" style="width: 120px; height: 120px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-4" 
+                                 style="width: 120px; height: 120px;">
+                                <i class="bi bi-person text-primary display-3"></i>
+                            </div>
+                        }
+                        <div class="flex-grow-1">
+                            <h2 class="fw-bold mb-2">@Model.FullName</h2>
+                            @if (!string.IsNullOrEmpty(Model.Email))
+                            {
+                                <p class="text-secondary mb-1">
+                                    <i class="bi bi-envelope me-2"></i>@Model.Email
+                                </p>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                            {
+                                <p class="text-secondary mb-0">
+                                    <i class="bi bi-telephone me-2"></i>@Model.PhoneNumber
+                                </p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Summary))
+                    {
+                        <hr />
+                        <h6 class="text-primary mb-2">
+                            <i class="bi bi-person-lines-fill me-2"></i>Professional Summary
+                        </h6>
+                        <p class="text-secondary mb-0" style="white-space: pre-line;">@Model.Summary</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Work Experience -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-briefcase me-2 text-primary"></i>Work Experience
+                        <span class="badge bg-secondary ms-2">@Model.Experience.Count</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.HasExperience)
+                    {
+                        @foreach (var exp in Model.Experience)
+                        {
+                            <div class="mb-4 pb-3 @(exp != Model.Experience.Last() ? "border-bottom" : "")">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-semibold">@exp.JobTitle</h6>
+                                        <p class="text-primary mb-1">
+                                            <i class="bi bi-building me-1"></i>@exp.CompanyName
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-light text-dark">
+                                        @(exp.StartDate?.ToString("MMM yyyy") ?? "N/A") - @(exp.EndDate?.ToString("MMM yyyy") ?? "Present")
+                                    </span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(exp.Description))
+                                {
+                                    <p class="text-secondary mb-0 mt-2" style="white-space: pre-line;">@exp.Description</p>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-briefcase display-6 d-block mb-2"></i>
+                            <p class="mb-0">No work experience listed</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Education -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-mortarboard me-2 text-primary"></i>Education
+                        <span class="badge bg-secondary ms-2">@Model.Education.Count</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.HasEducation)
+                    {
+                        @foreach (var edu in Model.Education)
+                        {
+                            <div class="mb-3 @(edu != Model.Education.Last() ? "pb-3 border-bottom" : "")">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-semibold">
+                                            @edu.Qualification
+                                            @if (!string.IsNullOrEmpty(edu.FieldOfStudy))
+                                            {
+                                                <span class="text-muted fw-normal">in @edu.FieldOfStudy</span>
+                                            }
+                                        </h6>
+                                        <p class="text-primary mb-0">
+                                            <i class="bi bi-building me-1"></i>@edu.SchoolName
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-light text-dark">
+                                        @(edu.StartYear?.ToString() ?? "N/A") - @(edu.EndYear?.ToString() ?? "Present")
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-mortarboard display-6 d-block mb-2"></i>
+                            <p class="mb-0">No education listed</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Skills -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-stars me-2 text-primary"></i>Skills
+                        <span class="badge bg-secondary ms-2">@Model.Skills.Count</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.HasSkills)
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var skill in Model.Skills)
+                            {
+                                <span class="badge @ResumeOptions.GetSkillLevelBadgeClass(skill.SkillLevel) fs-6">
+                                    @skill.SkillName
+                                    @if (!string.IsNullOrEmpty(skill.SkillLevel))
+                                    {
+                                        <small class="opacity-75">(@skill.SkillLevel)</small>
+                                    }
+                                </span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-stars display-6 d-block mb-2"></i>
+                            <p class="mb-0">No skills listed</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Resume Summary Card -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>Resume Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2 d-flex justify-content-between">
+                            <span class="text-muted">Experience Entries</span>
+                            <strong>@Model.Experience.Count</strong>
+                        </li>
+                        <li class="mb-2 d-flex justify-content-between">
+                            <span class="text-muted">Education Entries</span>
+                            <strong>@Model.Education.Count</strong>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span class="text-muted">Skills Listed</span>
+                            <strong>@Model.Skills.Count</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn { display: none !important; }
+        .card { border: 1px solid #dee2e6 !important; }
+    }
+</style>
+
+

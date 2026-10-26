@@ -1,0 +1,17 @@
+@model ResumeSnapshotViewModel
+@*
+    Resume Preview Partial
+    Used in the Resume Builder page to show a preview of the resume.
+    Uses the shared _ResumeTemplate for consistent display.
+*@
+
+@await Html.PartialAsync("_ResumeTemplate", Model)
+
+<div class="resume-actions no-print">
+    <a href="/Resume/DownloadPdf" class="btn btn-primary">
+        <i class="bi bi-file-pdf me-2"></i>Download PDF
+    </a>
+    <button class="btn btn-outline-secondary" onclick="window.print()">
+        <i class="bi bi-printer me-2"></i>Print This Page
+    </button>
+</div>

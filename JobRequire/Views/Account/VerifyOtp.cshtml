@@ -1,0 +1,164 @@
+@model VerifyOtpViewModel
+@{
+    ViewData["Title"] = "Verify Email";
+}
+
+<div class="py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-envelope-check display-4 text-primary"></i>
+                        <h2 class="fw-bold mt-2">Verify Your Email</h2>
+                        <p class="text-secondary">
+                            We've sent a 6-digit verification code to<br />
+                            <strong>@Model.Email</strong>
+                        </p>
+                    </div>
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["WarningMessage"] != null)
+                    {
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["WarningMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyOtp" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="Email" />
+
+                        <div class="mb-4">
+                            <label asp-for="OtpCode" class="form-label">Verification Code</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <input asp-for="OtpCode" class="form-control form-control-lg text-center" 
+                                       type="text" maxlength="6" placeholder="000000" 
+                                       style="letter-spacing: 8px; font-weight: bold;" autocomplete="off" />
+                            </div>
+                            <span asp-validation-for="OtpCode" class="text-danger"></span>
+                            <div class="form-text">Enter the 6-digit code sent to your email</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                            <i class="bi bi-check-circle me-2"></i>Verify Email
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-secondary mb-3">Didn't receive the code?</p>
+                        <form asp-action="ResendOtp" method="post" class="d-inline">
+                            <input type="hidden" name="UserId" value="@Model.UserId" />
+                            <input type="hidden" name="Email" value="@Model.Email" />
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-repeat me-2"></i>Resend Code
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a asp-action="Login" class="text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-info-circle text-info me-2 mt-1"></i>
+                        <div class="small text-secondary">
+                            <strong>Note:</strong> The verification code expires in 10 minutes. 
+                            If you don't see the email, please check your spam folder.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Auto-focus on OTP input and format input
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('OtpCode');
+            if (otpInput) {
+                otpInput.focus();
+                
+                // Only allow digits
+                otpInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '').substring(0, 6);
+                });
+            }
+        });
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

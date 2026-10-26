@@ -1,0 +1,230 @@
+@model JobSearchResultViewModel
+
+@if (Model.Jobs.Count == 0)
+{
+    <div class="text-center py-5">
+        <i class="bi bi-search display-1 text-muted"></i>
+        <h4 class="mt-3">No jobs found</h4>
+        <p class="text-muted">Try adjusting your search filters or browse all available jobs.</p>
+        <a href="/Jobs" class="btn btn-primary">
+            <i class="bi bi-arrow-clockwise me-2"></i>Clear Filters
+        </a>
+    </div>
+}
+else
+{
+    <!-- Job Cards -->
+    <div class="row g-3">
+        @foreach (var job in Model.Jobs)
+        {
+            <div class="col-12">
+                <div class="card job-card h-100">
+                    <div class="card-body">
+                        <div class="row align-items-start">
+                            <!-- Company Logo -->
+                            <div class="col-auto d-none d-md-block">
+                                @if (!string.IsNullOrEmpty(job.CompanyLogo))
+                                {
+                                    <img src="@job.CompanyLogo" alt="@job.CompanyName" class="company-logo">
+                                }
+                                else
+                                {
+                                    <div class="company-logo-placeholder">
+                                        @job.CompanyName.Substring(0, 1).ToUpper()
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Job Details -->
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="mb-1">
+                                            <a href="/Jobs/Details/@job.JobVacancyId" class="text-decoration-none text-dark stretched-link">
+                                                @job.JobTitle
+                                            </a>
+                                            @if (job.IsPopular)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2" title="Popular Job - 50+ jobseekers interested">
+                                                    <i class="bi bi-star-fill me-1"></i>Popular
+                                                </span>
+                                            }
+                                        </h5>
+                                        <p class="text-muted mb-0">
+                                            <a href="/Companies/Details/@job.EmployerProfileId" class="text-decoration-none text-muted position-relative" style="z-index: 2;">
+                                                @job.CompanyName
+                                            </a>
+                                        </p>
+                                    </div>
+                                    <div class="d-flex gap-2 position-relative" style="z-index: 2;">
+                                        @* Interest Button *@
+                                        @if (User.IsInRole("JobSeeker"))
+                                        {
+                                            <button class="btn btn-sm btn-interest @(job.IsInterested ? "interested" : "btn-outline-danger")" 
+                                                    data-job-id="@job.JobVacancyId" 
+                                                    title="@(job.IsInterested ? "Remove interest" : "Mark as interested")">
+                                                <i class="bi @(job.IsInterested ? "bi-heart-fill" : "bi-heart")"></i>
+                                                <span class="interest-count">@job.InterestedCount</span>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary btn-interest-disabled" 
+                                                    disabled
+                                                    title="Login as JobSeeker to mark interest">
+                                                <i class="bi bi-heart text-muted"></i>
+                                                <span class="interest-count text-muted">@job.InterestedCount</span>
+                                            </button>
+                                        }
+                                        @* Bookmark Button *@
+                                        @if (User.IsInRole("JobSeeker"))
+                                        {
+                                            <button class="btn btn-outline-secondary btn-sm btn-bookmark @(job.IsBookmarked ? "bookmarked" : "")" 
+                                                    data-job-id="@job.JobVacancyId" title="@(job.IsBookmarked ? "Remove bookmark" : "Bookmark this job")">
+                                                <i class="bi @(job.IsBookmarked ? "bi-bookmark-fill" : "bi-bookmark")"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Job Meta -->
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        <i class="bi bi-geo-alt me-1"></i>@job.Location
+                                    </span>
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="bi bi-briefcase me-1"></i>@job.JobType
+                                    </span>
+                                    <span class="badge bg-info-subtle text-info">
+                                        <i class="bi bi-tag me-1"></i>@job.Category
+                                    </span>
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        <i class="bi bi-cash-stack me-1"></i>@job.SalaryDisplay
+                                    </span>
+                                    @if (job.InterestedCount > 0)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger" data-job-interest-badge="@job.JobVacancyId">
+                                            <i class="bi bi-fire me-1"></i><span class="badge-interest-count">@job.InterestedCount</span> interested
+                                        </span>
+                                    }
+                                    @if (job.IsClosingSoon && !job.IsClosed)
+                                    {
+                                        <span class="badge bg-danger badge-closing-soon">
+                                            <i class="bi bi-clock me-1"></i>Closing Soon
+                                        </span>
+                                    }
+                                    @if (job.IsClosed)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>Closed
+                                        </span>
+                                    }
+                                </div>
+
+                                <!-- Description -->
+                                @if (!string.IsNullOrEmpty(job.Description))
+                                {
+                                    <p class="text-muted small mb-2 d-none d-md-block">
+                                        @job.Description
+                                    </p>
+                                }
+
+                                <!-- Footer -->
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>Posted @job.TimeAgo
+                                        @if (job.ClosingDate.HasValue)
+                                        {
+                                            <span class="ms-2">
+                                                <i class="bi bi-calendar-event me-1"></i>Closes @job.ClosingDate.Value.ToString("MMM dd, yyyy")
+                                            </span>
+                                        }
+                                    </small>
+                                    <div class="position-relative" style="z-index: 2;">
+                                        @if (job.HasApplied)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Applied
+                                            </span>
+                                        }
+                                        else if (!job.IsClosed)
+                                        {
+                                            <a href="/Jobs/Details/@job.JobVacancyId" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-send me-1"></i>View & Apply
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Job search results pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- Previous -->
+                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link pagination-link" href="#" data-page="@(Model.PageNumber - 1)" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                @{
+                    var startPage = Math.Max(1, Model.PageNumber - 2);
+                    var endPage = Math.Min(Model.TotalPages, Model.PageNumber + 2);
+
+                    if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link pagination-link" href="#" data-page="1">1</a>
+                        </li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+
+                    for (var i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link pagination-link" href="#" data-page="@i">@i</a>
+                        </li>
+                    }
+
+                    if (endPage < Model.TotalPages)
+                    {
+                        if (endPage < Model.TotalPages - 1)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link pagination-link" href="#" data-page="@Model.TotalPages">@Model.TotalPages</a>
+                        </li>
+                    }
+                }
+
+                <!-- Next -->
+                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                    <a class="page-link pagination-link" href="#" data-page="@(Model.PageNumber + 1)" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted small">
+            Showing @((Model.PageNumber - 1) * Model.PageSize + 1) - @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount) of @Model.TotalCount jobs
+        </div>
+    }
+}
+

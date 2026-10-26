@@ -1,0 +1,186 @@
+@model JobRequire.ViewComponents.NotificationSummaryViewModel
+
+<!-- Notifications Bell - Unified for all user roles -->
+<li class="nav-item dropdown me-2">
+    <a class="nav-link position-relative" href="#" id="notificationsDropdown" 
+       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell fs-5"></i>
+        @if (Model.HasUnread)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @(Model.UnreadCount > 99 ? "99+" : Model.UnreadCount.ToString())
+                <span class="visually-hidden">unread notifications</span>
+            </span>
+        }
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" 
+        aria-labelledby="notificationsDropdown" style="min-width: 350px; max-height: 400px; overflow-y: auto;">
+        
+        <!-- Header -->
+        <li class="dropdown-header d-flex justify-content-between align-items-center px-3 py-2">
+            <span class="fw-semibold">
+                <i class="bi bi-bell me-2"></i>Notifications
+            </span>
+            @if (Model.HasUnread)
+            {
+                <span class="badge bg-danger rounded-pill">@Model.UnreadCount new</span>
+            }
+        </li>
+        <li><hr class="dropdown-divider my-0" /></li>
+        
+        <!-- Notifications List -->
+        <li>
+            <div class="notification-list px-2 py-2">
+                @if (Model.RecentNotifications.Any())
+                {
+                    @foreach (var notification in Model.RecentNotifications)
+                    {
+                        <div class="notification-item p-2 rounded mb-1 @notification.BackgroundClass" 
+                             style="@(!notification.IsRead ? "border-left: 3px solid var(--bs-primary);" : "")"
+                             data-notification-id="@notification.NotificationId">
+                            <div class="d-flex align-items-start">
+                                <i class="@notification.IconClass me-2 mt-1"></i>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="fw-semibold small text-truncate">@notification.Title</div>
+                                    @if (!string.IsNullOrEmpty(notification.Message))
+                                    {
+                                        <div class="text-muted small text-truncate" style="max-width: 280px;">
+                                            @notification.Message
+                                        </div>
+                                    }
+                                    <small class="text-muted">@notification.TimeAgo</small>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(notification.ActionUrl))
+                            {
+                                <a asp-controller="Notifications" asp-action="GoTo" asp-route-id="@notification.NotificationId" 
+                                   class="btn btn-sm btn-outline-primary mt-2 w-100">
+                                    @(notification.ActionText ?? "View")
+                                </a>
+                            }
+                        </div>
+                    }
+                    
+                    @if (Model.UnreadCount > Model.RecentNotifications.Count)
+                    {
+                        <div class="text-center mt-2 pt-2 border-top">
+                            <small class="text-muted">
+                                And <strong>@(Model.UnreadCount - Model.RecentNotifications.Count)</strong> more unread...
+                            </small>
+                        </div>
+                    }
+                }
+                else if (Model.LatestNotification != null)
+                {
+                    <!-- Show latest notification even if all are read -->
+                    <div class="notification-item p-2 rounded mb-1">
+                        <div class="d-flex align-items-start">
+                            <i class="@Model.LatestNotification.IconClass me-2 mt-1"></i>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-semibold small text-truncate">@Model.LatestNotification.Title</div>
+                                @if (!string.IsNullOrEmpty(Model.LatestNotification.Message))
+                                {
+                                    <div class="text-muted small text-truncate" style="max-width: 280px;">
+                                        @Model.LatestNotification.Message
+                                    </div>
+                                }
+                                <small class="text-muted">@Model.LatestNotification.TimeAgo</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center text-muted py-2">
+                        <small>All caught up! No unread notifications.</small>
+                    </div>
+                }
+                else
+                {
+                    <!-- No notifications at all -->
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                        <small>No new notifications</small>
+                    </div>
+                }
+            </div>
+        </li>
+        
+        <li><hr class="dropdown-divider my-0" /></li>
+        
+        <!-- Footer -->
+        <li class="text-center py-2">
+            <a asp-controller="Notifications" asp-action="Index" class="text-decoration-none small">
+                <i class="bi bi-list-ul me-1"></i>View all notifications
+            </a>
+        </li>
+    </ul>
+</li>
+
+<style>
+    .notification-dropdown {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .notification-item {
+        transition: background-color 0.2s ease;
+    }
+    
+    .notification-item:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05) !important;
+    }
+    
+    .notification-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

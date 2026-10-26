@@ -1,0 +1,283 @@
+@model JobVacancyListViewModel
+@{
+    ViewData["Title"] = "Job Listings";
+}
+
+<div class="py-4">
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h1 class="page-title mb-1">Find Your Next Opportunity</h1>
+            <p class="helper-text mb-0">
+                <strong>@Model.TotalCount</strong> jobs available matching your criteria
+            </p>
+        </div>
+        @if (User.IsInRole("Employer"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Post a Job
+            </a>
+        }
+    </div>
+
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2" style="color: var(--primary-color);"></i>Filter Jobs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filterForm">
+                        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+                        <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Search Keywords</label>
+                            <input type="text" class="form-control" name="searchTerm" value="@Model.SearchTerm" 
+                                   placeholder="Job title, company, skills..." />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="categoryFilter" class="form-select">
+                                <option value="">All Categories</option>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    <option value="@cat.Value" selected="@(Model.CategoryFilter == cat.Value)">@cat.Text</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Employment Type</label>
+                            <select name="jobTypeFilter" class="form-select">
+                                <option value="">All Types</option>
+                                @foreach (var type in Model.JobTypes)
+                                {
+                                    <option value="@type.Value" selected="@(Model.JobTypeFilter == type.Value)">@type.Text</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="locationFilter" value="@Model.LocationFilter" 
+                                   placeholder="City, state, or remote..." />
+                        </div>
+
+                        @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="statusFilter" class="form-select">
+                                    <option value="">All Statuses</option>
+                                    @foreach (var status in Model.Statuses)
+                                    {
+                                        <option value="@status.Value" selected="@(Model.StatusFilter == status.Value)">@status.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+
+                        <div class="mb-4">
+                            <label class="form-label">Salary Range</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="minSalary" value="@Model.MinSalary" 
+                                               placeholder="Min" />
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="maxSalary" value="@Model.MaxSalary" 
+                                               placeholder="Max" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-1"></i>Apply Filters
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Clear All
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Listings -->
+        <div class="col-lg-9">
+            <!-- Sort Options -->
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white rounded" style="border: 1px solid var(--border-light);">
+                <span class="text-muted small">
+                    Showing @((Model.PageNumber - 1) * Model.PageSize + 1) - @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount) of @Model.TotalCount jobs
+                </span>
+                <div class="d-flex gap-2 align-items-center">
+                    <label class="form-label mb-0 small text-muted me-2">Sort:</label>
+                    <select class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                        <option value="PublishDate_desc" selected="@(Model.SortBy == "PublishDate" && Model.SortOrder == "desc")">Newest First</option>
+                        <option value="PublishDate_asc" selected="@(Model.SortBy == "PublishDate" && Model.SortOrder == "asc")">Oldest First</option>
+                        <option value="JobTitle_asc" selected="@(Model.SortBy == "JobTitle" && Model.SortOrder == "asc")">Title A-Z</option>
+                        <option value="JobTitle_desc" selected="@(Model.SortBy == "JobTitle" && Model.SortOrder == "desc")">Title Z-A</option>
+                        <option value="SalaryMin_desc" selected="@(Model.SortBy == "SalaryMin" && Model.SortOrder == "desc")">Salary: High to Low</option>
+                        <option value="SalaryMin_asc" selected="@(Model.SortBy == "SalaryMin" && Model.SortOrder == "asc")">Salary: Low to High</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (Model.Jobs.Any())
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var job in Model.Jobs)
+                    {
+                        <div class="card job-card">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-8">
+                                        <div class="d-flex align-items-start">
+                                            @if (!string.IsNullOrEmpty(job.CompanyLogo))
+                                            {
+                                                <img src="@job.CompanyLogo" alt="@job.CompanyName" 
+                                                     class="rounded me-3" style="width: 56px; height: 56px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded d-flex align-items-center justify-content-center me-3" 
+                                                     style="width: 56px; height: 56px; background: var(--bg-warm);">
+                                                    <i class="bi bi-building" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                                </div>
+                                            }
+                                            <div>
+                                                <h5 class="job-title mb-1">
+                                                    <a asp-action="Details" asp-route-id="@job.JobVacancyId" class="text-decoration-none">
+                                                        @job.JobTitle
+                                                    </a>
+                                                </h5>
+                                                <p class="company-name mb-2">@job.CompanyName</p>
+                                                <div class="job-meta">
+                                                    <span><i class="bi bi-geo-alt"></i> @job.Location</span>
+                                                    <span><i class="bi bi-clock"></i> @job.JobType</span>
+                                                    @if (job.SalaryMin.HasValue || job.SalaryMax.HasValue)
+                                                    {
+                                                        <span>
+                                                            <i class="bi bi-cash-stack"></i>
+                                                            RM @(job.SalaryMin?.ToString("N0") ?? "—") - RM @(job.SalaryMax?.ToString("N0") ?? "—")
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                                        <div class="mb-2">
+                                            <span class="badge @(job.Status == "Open" ? "bg-success" : job.Status == "Closed" ? "bg-danger" : "bg-secondary") me-1">
+                                                @job.Status
+                                            </span>
+                                            <span class="badge bg-secondary">@job.Category</span>
+                                        </div>
+                                        <small class="text-muted d-block mb-2">
+                                            Posted @job.PublishDate.ToString("MMM dd, yyyy")
+                                        </small>
+                                        @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
+                                        {
+                                            <small class="text-muted">
+                                                <i class="bi bi-people me-1"></i>@job.ApplicationsCount applications
+                                            </small>
+                                        }
+                                        <div class="mt-2">
+                                            <a asp-action="Details" asp-route-id="@job.JobVacancyId" class="btn btn-outline-primary btn-sm">
+                                                View Details <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                                <a class="page-link" href="@GetPageUrl(Model.PageNumber - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                    <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                                <a class="page-link" href="@GetPageUrl(Model.PageNumber + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <div class="empty-state py-5">
+                            <i class="bi bi-search"></i>
+                            <h5>No jobs found</h5>
+                            <p>Try adjusting your filters or search terms to find more opportunities.</p>
+                            <a asp-action="Index" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Clear Filters
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetPageUrl(int page)
+    {
+        var query = new Dictionary<string, string?>
+        {
+            { "pageNumber", page.ToString() },
+            { "searchTerm", Model.SearchTerm },
+            { "categoryFilter", Model.CategoryFilter },
+            { "jobTypeFilter", Model.JobTypeFilter },
+            { "locationFilter", Model.LocationFilter },
+            { "statusFilter", Model.StatusFilter },
+            { "minSalary", Model.MinSalary?.ToString() },
+            { "maxSalary", Model.MaxSalary?.ToString() },
+            { "sortBy", Model.SortBy },
+            { "sortOrder", Model.SortOrder }
+        };
+        return Url.Action("Index", query)!;
+    }
+}
+
+@section Scripts {
+    <script>
+        function updateSort(value) {
+            var parts = value.split('_');
+            var form = document.getElementById('filterForm');
+            form.querySelector('[name="sortBy"]').value = parts[0];
+            form.querySelector('[name="sortOrder"]').value = parts[1];
+            form.submit();
+        }
+    </script>
+}

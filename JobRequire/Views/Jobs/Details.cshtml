@@ -1,0 +1,448 @@
+@model JobListItemViewModel
+@{
+    ViewData["Title"] = Model.JobTitle + " - " + Model.CompanyName;
+    var fullDescription = ViewBag.FullDescription as string;
+    var requirements = ViewBag.Requirements as string;
+    var relatedJobs = ViewBag.RelatedJobs as List<JobListItemViewModel> ?? new List<JobListItemViewModel>();
+}
+
+<div class="py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/Jobs">Jobs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.JobTitle</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Job Header Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            @if (!string.IsNullOrEmpty(Model.CompanyLogo))
+                            {
+                                <img src="@Model.CompanyLogo" alt="@Model.CompanyName" class="rounded" style="width: 80px; height: 80px; object-fit: contain;">
+                            }
+                            else
+                            {
+                                <div class="d-flex align-items-center justify-content-center rounded" 
+                                     style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 2rem; font-weight: bold;">
+                                    @Model.CompanyName.Substring(0, 1).ToUpper()
+                                </div>
+                            }
+                        </div>
+                        <div class="col">
+                            <h1 class="h3 mb-1">
+                                @Model.JobTitle
+                                @if (Model.IsPopular)
+                                {
+                                    <span class="badge bg-warning text-dark ms-2" title="Popular Job - 50+ jobseekers interested">
+                                        <i class="bi bi-star-fill me-1"></i>Popular
+                                    </span>
+                                }
+                            </h1>
+                            <p class="text-muted mb-2">
+                                <a asp-controller="Companies" asp-action="Details" asp-route-id="@Model.EmployerProfileId" class="text-decoration-none">
+                                    @Model.CompanyName
+                                </a>
+                            </p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-primary-subtle text-primary">
+                                    <i class="bi bi-geo-alt me-1"></i>@Model.Location
+                                </span>
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="bi bi-briefcase me-1"></i>@Model.JobType
+                                </span>
+                                <span class="badge bg-info-subtle text-info">
+                                    <i class="bi bi-tag me-1"></i>@Model.Category
+                                </span>
+                                @if (Model.InterestedCount > 0)
+                                {
+                                    <span class="badge bg-danger-subtle text-danger" id="interestBadge">
+                                        <i class="bi bi-fire me-1"></i><span id="interestBadgeCount">@Model.InterestedCount</span> interested
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Description -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Job Description</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(fullDescription))
+                    {
+                        <div class="job-description">
+                            @Html.Raw(fullDescription.Replace("\n", "<br>"))
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No description provided.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            @if (!string.IsNullOrEmpty(requirements))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Requirements</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="requirements">
+                            @Html.Raw(requirements.Replace("\n", "<br>"))
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Company Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-building me-2"></i>About @Model.CompanyName</h5>
+                </div>
+                <div class="card-body">
+                    <a asp-controller="Companies" asp-action="Details" asp-route-id="@Model.EmployerProfileId" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-right me-2"></i>View Company Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Apply Card -->
+            <div class="card shadow-sm mb-4 sticky-lg-top" style="top: 80px;">
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h4 class="text-primary mb-1">@Model.SalaryDisplay</h4>
+                        <small class="text-muted">per year</small>
+                    </div>
+
+                    <hr>
+
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt text-primary me-2"></i>
+                            <strong>Location:</strong> @Model.Location
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-briefcase text-primary me-2"></i>
+                            <strong>Job Type:</strong> @Model.JobType
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-tag text-primary me-2"></i>
+                            <strong>Category:</strong> @Model.Category
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-calendar-plus text-primary me-2"></i>
+                            <strong>Posted:</strong> @Model.PublishDate.ToString("MMM dd, yyyy")
+                        </li>
+                        @if (Model.ClosingDate.HasValue)
+                        {
+                            <li class="mb-2">
+                                <i class="bi bi-calendar-x text-primary me-2"></i>
+                                <strong>Closes:</strong> @Model.ClosingDate.Value.ToString("MMM dd, yyyy")
+                                @if (Model.IsClosingSoon && !Model.IsClosed)
+                                {
+                                    <span class="badge bg-danger ms-1">Closing Soon!</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+
+                    @if (Model.IsClosed)
+                    {
+                        <div class="alert alert-secondary text-center">
+                            <i class="bi bi-x-circle me-2"></i>This position is closed
+                        </div>
+                    }
+                    else if (Model.HasApplied)
+                    {
+                        <div class="alert alert-success text-center">
+                            <i class="bi bi-check-circle me-2"></i>You have already applied
+                        </div>
+                        <a href="/JobApplications/MyApplications" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-file-earmark-text me-2"></i>View My Applications
+                        </a>
+                    }
+                    else
+                    {
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("JobSeeker"))
+                            {
+                                <a href="/JobApplications/Apply/@Model.JobVacancyId" class="btn btn-primary btn-lg w-100 mb-2">
+                                    <i class="bi bi-send me-2"></i>Apply Now
+                                </a>
+                                <div class="d-flex gap-2 mb-2">
+                                    <button class="btn btn-outline-secondary flex-fill btn-bookmark-detail @(Model.IsBookmarked ? "bookmarked" : "")" 
+                                            data-job-id="@Model.JobVacancyId">
+                                        <i class="bi @(Model.IsBookmarked ? "bi-bookmark-fill" : "bi-bookmark") me-2"></i>
+                                        @(Model.IsBookmarked ? "Saved" : "Save")
+                                    </button>
+                                    <button class="btn flex-fill btn-interest-detail @(Model.IsInterested ? "interested" : "btn-outline-danger")" 
+                                            data-job-id="@Model.JobVacancyId">
+                                        <i class="bi @(Model.IsInterested ? "bi-heart-fill" : "bi-heart") me-2"></i>
+                                        <span class="interest-count">@Model.InterestedCount</span>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info text-center">
+                                    <i class="bi bi-info-circle me-2"></i>Only job seekers can apply
+                                </div>
+                                @* Show disabled interest count for employers *@
+                                @if (Model.InterestedCount > 0)
+                                {
+                                    <div class="text-center text-muted mt-2">
+                                        <i class="bi bi-fire text-danger me-1"></i>
+                                        <span>@Model.InterestedCount jobseekers interested</span>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <a href="/Account/Login?returnUrl=@Uri.EscapeDataString($"/Jobs/Details/{Model.JobVacancyId}")" class="btn btn-primary btn-lg w-100 mb-2">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login to Apply
+                            </a>
+                            <a href="/Account/Register?role=JobSeeker" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-person-plus me-2"></i>Create Account
+                            </a>
+                            @* Show interest count for guests *@
+                            @if (Model.InterestedCount > 0)
+                            {
+                                <div class="text-center text-muted mt-3">
+                                    <i class="bi bi-fire text-danger me-1"></i>
+                                    <span>@Model.InterestedCount jobseekers interested</span>
+                                </div>
+                            }
+                        }
+                    }
+
+                    <hr>
+
+                    <!-- Share -->
+                    <div class="text-center">
+                        <p class="text-muted small mb-2">Share this job:</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="https://www.linkedin.com/sharing/share-offsite/?url=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" 
+                               target="_blank" class="btn btn-outline-primary btn-sm" title="Share on LinkedIn">
+                                <i class="bi bi-linkedin"></i>
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?url=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)&text=@Uri.EscapeDataString(Model.JobTitle + " at " + Model.CompanyName)" 
+                               target="_blank" class="btn btn-outline-info btn-sm" title="Share on Twitter">
+                                <i class="bi bi-twitter-x"></i>
+                            </a>
+                            <a href="mailto:?subject=@Uri.EscapeDataString("Job Opportunity: " + Model.JobTitle)&body=@Uri.EscapeDataString("Check out this job: " + Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)" 
+                               class="btn btn-outline-secondary btn-sm" title="Share via Email">
+                                <i class="bi bi-envelope"></i>
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!');" title="Copy Link">
+                                <i class="bi bi-link-45deg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Jobs -->
+    @if (relatedJobs.Count > 0)
+    {
+        <div class="mt-4">
+            <h4 class="mb-3"><i class="bi bi-collection me-2"></i>Similar Jobs</h4>
+            <div class="row g-3">
+                @foreach (var job in relatedJobs)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <a href="/Jobs/Details/@job.JobVacancyId" class="text-decoration-none">@job.JobTitle</a>
+                                </h6>
+                                <p class="text-muted small mb-2">@job.CompanyName</p>
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    <span class="badge bg-light text-dark small">@job.Location</span>
+                                    <span class="badge bg-light text-dark small">@job.JobType</span>
+                                </div>
+                                <small class="text-muted">@job.TimeAgo</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .job-description, .requirements {
+            line-height: 1.8;
+        }
+        /* Interest button styles */
+        .btn-interest-detail {
+            transition: all 0.2s ease;
+        }
+        .btn-interest-detail.interested {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-interest-detail.interested:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+        .btn-interest-detail .interest-count {
+            font-weight: 600;
+        }
+        .btn-bookmark-detail.bookmarked {
+            color: #f59e0b;
+            border-color: #f59e0b;
+        }
+        .btn-bookmark-detail.bookmarked i {
+            color: #f59e0b;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const isAuthenticated = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+            const isJobSeeker = @(User.IsInRole("JobSeeker") ? "true" : "false");
+
+            // Bookmark button handler
+            $('.btn-bookmark-detail').on('click', function(e) {
+                e.preventDefault();
+                
+                if (!isAuthenticated) {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (!isJobSeeker) {
+                    alert('Only job seekers can bookmark jobs.');
+                    return;
+                }
+
+                var btn = $(this);
+                var jobId = btn.data('job-id');
+                var icon = btn.find('i');
+
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/api/jobs/bookmark',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ jobVacancyId: jobId }),
+                    success: function(response) {
+                        if (response.success) {
+                            if (response.isBookmarked) {
+                                icon.removeClass('bi-bookmark').addClass('bi-bookmark-fill');
+                                btn.addClass('bookmarked');
+                                btn.html('<i class="bi bi-bookmark-fill me-2"></i>Saved');
+                            } else {
+                                icon.removeClass('bi-bookmark-fill').addClass('bi-bookmark');
+                                btn.removeClass('bookmarked');
+                                btn.html('<i class="bi bi-bookmark me-2"></i>Save');
+                            }
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred. Please try again.');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Interest button handler
+            $('.btn-interest-detail').on('click', function(e) {
+                e.preventDefault();
+                
+                if (!isAuthenticated) {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (!isJobSeeker) {
+                    alert('Only job seekers can mark interest.');
+                    return;
+                }
+
+                var btn = $(this);
+                var jobId = btn.data('job-id');
+                var icon = btn.find('i');
+                var countSpan = btn.find('.interest-count');
+
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/api/jobs/interest',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ jobVacancyId: jobId }),
+                    success: function(response) {
+                        if (response.success) {
+                            // Update button state
+                            if (response.isInterested) {
+                                icon.removeClass('bi-heart').addClass('bi-heart-fill');
+                                btn.addClass('interested').removeClass('btn-outline-danger');
+                            } else {
+                                icon.removeClass('bi-heart-fill').addClass('bi-heart');
+                                btn.removeClass('interested').addClass('btn-outline-danger');
+                            }
+                            
+                            // Update count on button
+                            countSpan.text(response.interestedCount);
+                            
+                            // Update the badge count in header
+                            var badge = $('#interestBadge');
+                            if (response.interestedCount > 0) {
+                                if (badge.length) {
+                                    $('#interestBadgeCount').text(response.interestedCount);
+                                } else {
+                                    // Create badge if it doesn't exist
+                                    var badgeContainer = $('.d-flex.flex-wrap.gap-2').first();
+                                    var newBadge = $('<span class="badge bg-danger-subtle text-danger" id="interestBadge"><i class="bi bi-fire me-1"></i><span id="interestBadgeCount">' + response.interestedCount + '</span> interested</span>');
+                                    badgeContainer.append(newBadge);
+                                }
+                            } else {
+                                badge.remove();
+                            }
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred. Please try again.');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+}
+

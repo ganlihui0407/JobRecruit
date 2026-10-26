@@ -1,0 +1,305 @@
+@model CompanyDetailsViewModel
+@{
+    ViewData["Title"] = Model.CompanyName;
+}
+
+<div class="py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index"><i class="bi bi-building me-1"></i>Companies</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.CompanyName</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Company Header Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-4">
+                        @if (!string.IsNullOrEmpty(Model.CompanyLogo))
+                        {
+                            <img src="@Model.CompanyLogo" alt="@Model.CompanyName" 
+                                 class="rounded me-4" style="width: 100px; height: 100px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center me-4" 
+                                 style="width: 100px; height: 100px;">
+                                <i class="bi bi-building text-primary display-5"></i>
+                            </div>
+                        }
+                        <div class="flex-grow-1">
+                            <h1 class="fw-bold mb-2">@Model.CompanyName</h1>
+                            <div class="d-flex flex-wrap gap-2">
+                                @if (!string.IsNullOrEmpty(Model.Industry))
+                                {
+                                    <span class="badge bg-primary fs-6">
+                                        <i class="bi bi-tag me-1"></i>@Model.Industry
+                                    </span>
+                                }
+                                <span class="badge @(Model.OpenJobsCount > 0 ? "bg-success" : "bg-secondary") fs-6">
+                                    <i class="bi bi-briefcase me-1"></i>@Model.OpenJobsCount Open @(Model.OpenJobsCount == 1 ? "Position" : "Positions")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.CompanyDescription))
+                    {
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-info-circle me-2"></i>About Us
+                            </h5>
+                            <p class="text-secondary mb-0" style="white-space: pre-line;">@Model.CompanyDescription</p>
+                        </div>
+                    }
+
+                    <!-- Reviews Link -->
+                    <div class="pt-3 border-top">
+                        <a asp-controller="CompanyReviews" asp-action="Index" asp-route-employerProfileId="@Model.EmployerProfileId" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-star me-2"></i>View Company Reviews
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Listings Card -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-briefcase me-2 text-primary"></i>Open Positions
+                        <span class="badge bg-primary ms-2">@Model.OpenJobsCount</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.OpenJobs.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var job in Model.OpenJobs)
+                            {
+                                <div class="list-group-item list-group-item-action p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-semibold">
+                                                <a asp-controller="Jobs" asp-action="Details" asp-route-id="@job.JobVacancyId" 
+                                                   class="text-decoration-none text-dark">
+                                                    @job.JobTitle
+                                                </a>
+                                                @if (job.IsPopular)
+                                                {
+                                                    <span class="badge bg-warning text-dark ms-1" title="Popular Job - 50+ jobseekers interested">
+                                                        <i class="bi bi-star-fill"></i> Popular
+                                                    </span>
+                                                }
+                                            </h6>
+                                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-geo-alt me-1"></i>@job.Location
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-clock me-1"></i>@job.JobType
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-folder me-1"></i>@job.Category
+                                                </span>
+                                                @if (job.InterestedCount > 0)
+                                                {
+                                                    <span class="text-danger small">
+                                                        <i class="bi bi-fire me-1"></i>@job.InterestedCount interested
+                                                    </span>
+                                                }
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                                <span class="badge bg-success bg-opacity-10 text-white">
+                                                    <i class="bi bi-cash-stack me-1"></i>@job.SalaryDisplay
+                                                </span>
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-calendar me-1"></i>Posted @job.PostedDisplay
+                                                </span>
+                                                @if (job.ClosingDate.HasValue)
+                                                {
+                                                    var daysUntilClose = (job.ClosingDate.Value - DateTime.UtcNow).Days;
+                                                    <span class="@(daysUntilClose <= 7 ? "text-danger" : "text-muted") small">
+                                                        <i class="bi bi-hourglass-split me-1"></i>
+                                                        @if (daysUntilClose <= 0)
+                                                        {
+                                                            <text>Closing soon</text>
+                                                        }
+                                                        else if (daysUntilClose == 1)
+                                                        {
+                                                            <text>Closes tomorrow</text>
+                                                        }
+                                                        else
+                                                        {
+                                                            <text>Closes in @daysUntilClose days</text>
+                                                        }
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <a asp-controller="Jobs" asp-action="Details" asp-route-id="@job.JobVacancyId" 
+                                           class="btn btn-outline-primary btn-sm ms-3">
+                                            View Job <i class="bi bi-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-briefcase display-4 text-muted d-block mb-3"></i>
+                            <h6 class="text-muted">No open positions at the moment</h6>
+                            <p class="text-secondary small mb-0">Check back later for new opportunities!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Company Information Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>Company Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        @if (!string.IsNullOrEmpty(Model.Industry))
+                        {
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-tag text-primary me-3 mt-1"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Industry</small>
+                                        <span>@Model.Industry</span>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CompanyAddress))
+                        {
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-geo-alt text-primary me-3 mt-1"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Address</small>
+                                        <span>@Model.CompanyAddress</span>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        <li class="mb-0">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-briefcase text-primary me-3 mt-1"></i>
+                                <div>
+                                    <small class="text-muted d-block">Open Positions</small>
+                                    <span class="@(Model.OpenJobsCount > 0 ? "text-success fw-semibold" : "")">
+                                        @Model.OpenJobsCount @(Model.OpenJobsCount == 1 ? "job" : "jobs") available
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Management Actions (only for company owner or admin) -->
+            @if (Model.CanManage)
+            {
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>Manage Company
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.IsOwnCompany)
+                        {
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-check-circle text-success me-1"></i>
+                                This is your company profile.
+                            </p>
+                        }
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Employer" asp-action="Dashboard" class="btn btn-primary">
+                                <i class="bi bi-speedometer2 me-2"></i>Employer Dashboard
+                            </a>
+                            <a asp-controller="EmployerProfiles" asp-action="Edit" asp-route-id="@Model.EmployerProfileId" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-pencil me-2"></i>Edit Company Profile
+                            </a>
+                            <a asp-controller="JobVacancies" asp-action="Create" class="btn btn-outline-success">
+                                <i class="bi bi-plus-circle me-2"></i>Post New Job
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (!User.Identity?.IsAuthenticated == true)
+            {
+                <!-- Call to Action for Guests -->
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-circle display-4 text-primary d-block mb-3"></i>
+                        <h6>Want to apply for jobs?</h6>
+                        <p class="text-muted small mb-3">Create an account to apply for positions and save your favorite jobs.</p>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">
+                                <i class="bi bi-person-plus me-2"></i>Sign Up
+                            </a>
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Back to Companies -->
+            <div class="mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Companies
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .list-group-item-action:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,36 @@
+﻿# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+**/bin/
+**/obj/
+
+# Local SQL Server database files
+**/App_Data/*.mdf
+**/App_Data/*.ldf
+
+# Local secrets and credentials
+appsettings.Development.json
+secrets.json
+
+# Personal uploaded documents
+JobRequire/wwwroot/uploads/
+
+# Local utility executables
+tools/ngrok.exe
+
+# Private files
+JobRequire/ProtectedFiles/
+JobRequire/wwwroot/emails/
+JobRequire/wwwroot/uploads/
+JobRequire/appsettings.json
+JobRequire/appsettings.*.json
+
+# Local database files
+*.mdf
+*.ldf
+
+# Local utilities
+tools/ngrok.exe

@@ -1,0 +1,61 @@
+@model JobApplicationUploadViewModel
+@{
+    ViewData["Title"] = "Manage Documents";
+    var jobTitle = ViewBag.JobTitle as string;
+}
+
+<div class="py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/JobSeekerProfiles/Dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/JobApplications/MyApplications">My Applications</a></li>
+            <li class="breadcrumb-item active">Manage Documents</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-plus me-2"></i>Manage Application Documents
+                    </h4>
+                    <p class="text-muted mb-0 mt-1">For: <strong>@jobTitle</strong></p>
+                </div>
+                <div class="card-body">
+                    <form asp-antiforgery="true">
+                        @Html.AntiForgeryToken()
+                        
+                        <partial name="_FileUploadPartial" model="Model" />
+                        
+                        <hr class="my-4" />
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/JobApplications/MyApplications" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Applications
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>Document Tips
+                    </h6>
+                    <ul class="mb-0 small text-muted">
+                        <li>Upload your resume/CV in PDF format for best compatibility</li>
+                        <li>Include a cover letter tailored to the position</li>
+                        <li>Add relevant certifications or portfolio samples</li>
+                        <li>Maximum file size: 10 MB per file</li>
+                        <li>Allowed formats: PDF, Word documents, JPG, PNG</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

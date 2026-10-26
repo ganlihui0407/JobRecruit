@@ -1,0 +1,24 @@
+@model JobRequire.ViewComponents.ChatSummaryViewModel
+
+@if (Model.ShowIcon)
+{
+    <!-- Chat Icon - Links to Chat Inbox -->
+    <li class="nav-item me-2">
+        <a class="nav-link position-relative" asp-controller="ChatInbox" asp-action="Inbox" title="Chat Inbox">
+            <i class="bi bi-chat-dots fs-5"></i>
+            @if (Model.HasUnread)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @(Model.UnreadCount > 99 ? "99+" : Model.UnreadCount.ToString())
+                    <span class="visually-hidden">unread messages</span>
+                </span>
+            }
+        </a>
+    </li>
+}
+
+
+
+
+
+

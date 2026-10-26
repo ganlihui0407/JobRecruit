@@ -1,0 +1,527 @@
+@model ResumeDashboardViewModel
+@{
+    ViewData["Title"] = "Resume Builder";
+    var activeTab = ViewBag.ActiveTab as string ?? "profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/resume.css" asp-append-version="true" />
+}
+
+<div class="py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">
+                <i class="bi bi-file-earmark-person me-2"></i>Resume Builder
+            </h1>
+            <p class="text-muted mb-0">Build your professional resume step by step</p>
+        </div>
+        <div class="d-flex gap-2">
+            @* ResumeStatus property removed from model *@
+            @if (false) @* ResumeStatus check removed - always show publish button *@
+            {
+                <button class="btn btn-success" id="btnPublish" @(Model.CompletionPercentage < 50 ? "disabled" : "")>
+                    <i class="bi bi-check-circle me-2"></i>Publish Resume
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-warning" id="btnSaveDraft">
+                    <i class="bi bi-pencil me-2"></i>Save as Draft
+                </button>
+            }
+            <a href="/Resume/Preview" class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-eye me-2"></i>Preview
+            </a>
+            <a href="/Resume/DownloadPdf" class="btn btn-outline-secondary">
+                <i class="bi bi-file-pdf me-2"></i>Download PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="mb-0 me-3">Resume Completion</h6>
+                        <span class="badge @(Model.CompletionPercentage >= 80 ? "bg-success" : Model.CompletionPercentage >= 50 ? "bg-warning" : "bg-danger")">
+                            @Model.CompletionPercentage%
+                        </span>
+                        @* ResumeStatus badge removed - property no longer exists *@
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar @(Model.CompletionPercentage >= 80 ? "bg-success" : Model.CompletionPercentage >= 50 ? "bg-warning" : "bg-danger")" 
+                             role="progressbar" style="width: @Model.CompletionPercentage%;" 
+                             aria-valuenow="@Model.CompletionPercentage" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        @* ResumeLastUpdated property removed from model *@
+                    </small>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+                        <span class="badge bg-light text-dark" id="header-education-count">
+                            <i class="bi bi-mortarboard me-1"></i><span class="count-value">@Model.Education.Count</span> Education
+                        </span>
+                        <span class="badge bg-light text-dark" id="header-experience-count">
+                            <i class="bi bi-briefcase me-1"></i><span class="count-value">@Model.Experience.Count</span> Experience
+                        </span>
+                        <span class="badge bg-light text-dark" id="header-skills-count">
+                            <i class="bi bi-star me-1"></i><span class="count-value">@Model.Skills.Count</span> Skills
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="resumeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(activeTab == "profile" ? "active" : "")" id="profile-tab" data-bs-toggle="tab" 
+                    data-bs-target="#profile" type="button" role="tab">
+                <i class="bi bi-person me-2"></i>Profile
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(activeTab == "education" ? "active" : "")" id="education-tab" data-bs-toggle="tab" 
+                    data-bs-target="#education" type="button" role="tab">
+                <i class="bi bi-mortarboard me-2"></i>Education
+                <span class="badge bg-secondary ms-1">@Model.Education.Count</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(activeTab == "experience" ? "active" : "")" id="experience-tab" data-bs-toggle="tab" 
+                    data-bs-target="#experience" type="button" role="tab">
+                <i class="bi bi-briefcase me-2"></i>Experience
+                <span class="badge bg-secondary ms-1">@Model.Experience.Count</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(activeTab == "skills" ? "active" : "")" id="skills-tab" data-bs-toggle="tab" 
+                    data-bs-target="#skills" type="button" role="tab">
+                <i class="bi bi-star me-2"></i>Skills
+                <span class="badge bg-secondary ms-1">@Model.Skills.Count</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(activeTab == "preview" ? "active" : "")" id="preview-tab" data-bs-toggle="tab" 
+                    data-bs-target="#preview" type="button" role="tab">
+                <i class="bi bi-eye me-2"></i>Preview
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="resumeTabContent">
+        <!-- Profile Tab -->
+        <div class="tab-pane fade @(activeTab == "profile" ? "show active" : "")" id="profile" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-4">
+                                <div class="position-relative d-inline-block">
+                                    @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                                    {
+                                        <img src="@Model.ProfilePhoto" alt="Profile" class="rounded-circle mb-2" 
+                                             style="width: 150px; height: 150px; object-fit: cover;" id="profilePhotoPreview">
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center mb-2" 
+                                             style="width: 150px; height: 150px; margin: 0 auto;" id="profilePhotoPlaceholder">
+                                            <span class="text-white display-4">@Model.FullName.Substring(0, 1).ToUpper()</span>
+                                        </div>
+                                        <img src="" alt="Profile" class="rounded-circle mb-2 d-none" 
+                                             style="width: 150px; height: 150px; object-fit: cover;" id="profilePhotoPreview">
+                                    }
+                                    <label for="ProfilePhotoFile" class="btn btn-sm btn-outline-primary position-absolute" 
+                                           style="bottom: 10px; right: 0;">
+                                        <i class="bi bi-camera"></i>
+                                    </label>
+                                    <input type="file" id="ProfilePhotoFile" name="ProfilePhotoFile" class="d-none" accept="image/*">
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="FullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="FullName" name="FullName" 
+                                               value="@Model.FullName" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" value="@Model.Email" readonly disabled>
+                                        <small class="text-muted">Email cannot be changed here</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="PhoneNumber" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="PhoneNumber" name="PhoneNumber" 
+                                               value="@Model.PhoneNumber" placeholder="+1 (555) 123-4567">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="Summary" class="form-label">Professional Summary</label>
+                                        <textarea class="form-control" id="Summary" name="Summary" rows="5" 
+                                                  placeholder="Write a brief summary about yourself, your career goals, and what makes you a great candidate...">@Model.Summary</textarea>
+                                        <small class="text-muted">
+                                            <span id="summaryCount">@(Model.Summary?.Length ?? 0)</span>/2000 characters
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Education Tab -->
+        <div class="tab-pane fade @(activeTab == "education" ? "show active" : "")" id="education" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-mortarboard me-2"></i>Education</h5>
+                    <button class="btn btn-primary btn-sm" id="btnAddEducation">
+                        <i class="bi bi-plus-lg me-1"></i>Add Education
+                    </button>
+                </div>
+                <div class="card-body" id="educationList">
+                    <partial name="_EducationListPartial" model="Model.Education" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Experience Tab -->
+        <div class="tab-pane fade @(activeTab == "experience" ? "show active" : "")" id="experience" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Work Experience</h5>
+                    <button class="btn btn-primary btn-sm" id="btnAddExperience">
+                        <i class="bi bi-plus-lg me-1"></i>Add Experience
+                    </button>
+                </div>
+                <div class="card-body" id="experienceList">
+                    <partial name="_ExperienceListPartial" model="Model.Experience" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Tab -->
+        <div class="tab-pane fade @(activeTab == "skills" ? "show active" : "")" id="skills" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-star me-2"></i>Skills</h5>
+                    <button class="btn btn-primary btn-sm" id="btnAddSkill">
+                        <i class="bi bi-plus-lg me-1"></i>Add Skill
+                    </button>
+                </div>
+                <div class="card-body" id="skillsList">
+                    <partial name="_SkillsListPartial" model="Model.Skills" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Tab -->
+        <div class="tab-pane fade @(activeTab == "preview" ? "show active" : "")" id="preview" role="tabpanel">
+            <div id="previewContent">
+                <!-- Will be loaded via AJAX -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for forms -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="formModalTitle">Add/Edit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="formModalBody">
+                <!-- Form will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            const antiForgeryToken = $('input[name="__RequestVerificationToken"]').val();
+
+            // Profile photo preview
+            $('#ProfilePhotoFile').on('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#profilePhotoPreview').attr('src', e.target.result).removeClass('d-none');
+                        $('#profilePhotoPlaceholder').addClass('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Summary character count
+            $('#Summary').on('input', function() {
+                $('#summaryCount').text($(this).val().length);
+            });
+
+            // Profile form submit
+            $('#profileForm').on('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                $.ajax({
+                    url: '/Resume/UpdateProfile',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            showToast(response.message, 'success');
+                            updateCompletionPercentage();
+                        } else {
+                            showToast(response.message, 'danger');
+                        }
+                    },
+                    error: function() {
+                        showToast('An error occurred.', 'danger');
+                    }
+                });
+            });
+
+            // Education
+            $('#btnAddEducation').on('click', function() {
+                loadForm('/Resume/AddEducation', 'Add Education');
+            });
+
+            $(document).on('click', '.btn-edit-education', function() {
+                const id = $(this).data('id');
+                loadForm('/Resume/EditEducation/' + id, 'Edit Education');
+            });
+
+            $(document).on('click', '.btn-delete-education', function() {
+                const id = $(this).data('id');
+                if (confirm('Are you sure you want to delete this education record?')) {
+                    deleteItem('/Resume/DeleteEducation', id, '#educationList', '/Resume/EducationList');
+                }
+            });
+
+            // Experience
+            $('#btnAddExperience').on('click', function() {
+                loadForm('/Resume/AddExperience', 'Add Experience');
+            });
+
+            $(document).on('click', '.btn-edit-experience', function() {
+                const id = $(this).data('id');
+                loadForm('/Resume/EditExperience/' + id, 'Edit Experience');
+            });
+
+            $(document).on('click', '.btn-delete-experience', function() {
+                const id = $(this).data('id');
+                if (confirm('Are you sure you want to delete this experience record?')) {
+                    deleteItem('/Resume/DeleteExperience', id, '#experienceList', '/Resume/ExperienceList');
+                }
+            });
+
+            // Skills
+            $('#btnAddSkill').on('click', function() {
+                loadForm('/Resume/AddSkill', 'Add Skill');
+            });
+
+            $(document).on('click', '.btn-edit-skill', function() {
+                const id = $(this).data('id');
+                loadForm('/Resume/EditSkill/' + id, 'Edit Skill');
+            });
+
+            $(document).on('click', '.btn-delete-skill', function() {
+                const id = $(this).data('id');
+                if (confirm('Are you sure you want to delete this skill?')) {
+                    deleteItem('/Resume/DeleteSkill', id, '#skillsList', '/Resume/SkillsList');
+                }
+            });
+
+            // Form submission in modal
+            $(document).on('submit', '#formModalBody form', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const url = form.attr('action');
+                
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            formModal.hide();
+                            showToast(response.message, 'success');
+                            refreshAllLists();
+                            updateCompletionPercentage();
+                        } else {
+                            showToast(response.message, 'danger');
+                        }
+                    },
+                    error: function() {
+                        showToast('An error occurred.', 'danger');
+                    }
+                });
+            });
+
+            // Preview tab
+            $('#preview-tab').on('shown.bs.tab', function() {
+                loadPreview();
+            });
+
+            // Publish/Draft buttons
+            $('#btnPublish').on('click', function() {
+                updateStatus('Published');
+            });
+
+            $('#btnSaveDraft').on('click', function() {
+                updateStatus('Draft');
+            });
+
+            // Helper functions
+            function loadForm(url, title) {
+                $('#formModalTitle').text(title);
+                $('#formModalBody').html('<div class="text-center py-4"><div class="spinner-border"></div></div>');
+                formModal.show();
+                
+                $.get(url, function(html) {
+                    $('#formModalBody').html(html);
+                });
+            }
+
+            function deleteItem(url, id, listSelector, refreshUrl) {
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: { id: id, __RequestVerificationToken: antiForgeryToken },
+                    success: function(response) {
+                        if (response.success) {
+                            showToast(response.message, 'success');
+                            $(listSelector).load(refreshUrl);
+                            updateCompletionPercentage();
+                            updateSectionCounts();
+                        } else {
+                            showToast(response.message, 'danger');
+                        }
+                    },
+                    error: function() {
+                        showToast('An error occurred.', 'danger');
+                    }
+                });
+            }
+
+            function refreshAllLists() {
+                $('#educationList').load('/Resume/EducationList');
+                $('#experienceList').load('/Resume/ExperienceList');
+                $('#skillsList').load('/Resume/SkillsList');
+                updateSectionCounts();
+            }
+
+            function updateSectionCounts() {
+                $.get('/Resume/GetSectionCounts', function(data) {
+                    // Update tab badges
+                    $('#education-tab .badge').text(data.educationCount);
+                    $('#experience-tab .badge').text(data.experienceCount);
+                    $('#skills-tab .badge').text(data.skillsCount);
+                    
+                    // Update header badges
+                    $('#header-education-count .count-value').text(data.educationCount);
+                    $('#header-experience-count .count-value').text(data.experienceCount);
+                    $('#header-skills-count .count-value').text(data.skillsCount);
+                });
+            }
+
+            function loadPreview() {
+                $('#previewContent').html('<div class="text-center py-4"><div class="spinner-border"></div></div>');
+                $.get('/Resume/PreviewPartial', function(html) {
+                    $('#previewContent').html(html);
+                });
+            }
+
+            function updateStatus(status) {
+                $.ajax({
+                    url: '/Resume/UpdateStatus',
+                    method: 'POST',
+                    data: { status: status, __RequestVerificationToken: antiForgeryToken },
+                    success: function(response) {
+                        if (response.success) {
+                            showToast(response.message, 'success');
+                            setTimeout(function() { location.reload(); }, 1000);
+                        } else {
+                            showToast(response.message, 'danger');
+                        }
+                    },
+                    error: function() {
+                        showToast('An error occurred.', 'danger');
+                    }
+                });
+            }
+
+            function updateCompletionPercentage() {
+                $.get('/Resume/GetCompletionPercentage', function(data) {
+                    $('.progress-bar').css('width', data.percentage + '%').attr('aria-valuenow', data.percentage);
+                    $('.progress-bar').parent().prev().find('.badge:first').text(data.percentage + '%');
+                    
+                    // Update publish button state
+                    if (data.percentage >= 50) {
+                        $('#btnPublish').prop('disabled', false);
+                    } else {
+                        $('#btnPublish').prop('disabled', true);
+                    }
+                });
+            }
+
+            function showToast(message, type) {
+                var toastHtml = `
+                    <div class="toast align-items-center text-bg-${type} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                var toastContainer = $('#toastContainer');
+                if (toastContainer.length === 0) {
+                    $('body').append('<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
+                    toastContainer = $('#toastContainer');
+                }
+                
+                var toast = $(toastHtml);
+                toastContainer.append(toast);
+                var bsToast = new bootstrap.Toast(toast[0], { delay: 3000 });
+                bsToast.show();
+                
+                toast.on('hidden.bs.toast', function() {
+                    $(this).remove();
+                });
+            }
+        });
+    </script>
+}
+

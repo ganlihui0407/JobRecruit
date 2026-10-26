@@ -1,0 +1,308 @@
+@model JobApplicationUploadViewModel
+@{
+    var maxFileSize = 10; // MB
+    var allowedExtensions = ".pdf, .docx, .doc, .jpg, .jpeg, .png";
+}
+
+<div class="file-upload-container" data-application-id="@Model.JobApplicationId">
+    <!-- Upload Area -->
+    <div class="upload-area border border-2 border-dashed rounded p-4 text-center mb-3" id="uploadArea">
+        <i class="bi bi-cloud-upload display-4 text-muted"></i>
+        <h5 class="mt-2">Drag & Drop Files Here</h5>
+        <p class="text-muted mb-2">or</p>
+        <label for="fileInput" class="btn btn-primary">
+            <i class="bi bi-folder2-open me-2"></i>Browse Files
+        </label>
+        <input type="file" id="fileInput" class="d-none" multiple 
+               accept=".pdf,.docx,.doc,.jpg,.jpeg,.png">
+        <p class="text-muted small mt-2 mb-0">
+            Allowed: @allowedExtensions (Max @maxFileSize MB per file)
+        </p>
+    </div>
+
+    <!-- Upload Progress -->
+    <div id="uploadProgress" class="d-none mb-3">
+        <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span>Uploading...</span>
+        </div>
+        <div class="progress mt-2" style="height: 5px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                 role="progressbar" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Uploaded Files List -->
+    <div id="uploadedFilesList">
+        @if (Model.ExistingDocuments.Count > 0)
+        {
+            <h6 class="mb-2"><i class="bi bi-paperclip me-2"></i>Attached Documents</h6>
+            <div class="list-group" id="documentsContainer">
+                @foreach (var doc in Model.ExistingDocuments)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center" 
+                         data-document-id="@doc.ApplicationDocumentId">
+                        <div class="d-flex align-items-center">
+                            <i class="bi @doc.FileIcon fs-5 me-2"></i>
+                            <div>
+                                <span class="fw-medium">@doc.FileName</span>
+                                <br>
+                                <small class="text-muted">@doc.FileSizeDisplay • @doc.UploadedAt.ToString("MMM dd, yyyy")</small>
+                            </div>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <a href="@doc.DownloadUrl" class="btn btn-outline-primary" title="Download">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-delete-document" 
+                                    data-id="@doc.ApplicationDocumentId" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div id="noDocumentsMessage" class="text-center text-muted py-3">
+                <i class="bi bi-file-earmark-x fs-1"></i>
+                <p class="mb-0 mt-2">No documents attached yet</p>
+            </div>
+            <div class="list-group d-none" id="documentsContainer"></div>
+        }
+    </div>
+</div>
+
+<style>
+    .upload-area {
+        border-color: #dee2e6 !important;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .upload-area:hover, .upload-area.drag-over {
+        border-color: #0d6efd !important;
+        background-color: #f8f9fa;
+    }
+    .upload-area.drag-over {
+        background-color: #e7f1ff;
+    }
+</style>
+
+<script>
+    (function() {
+        const container = document.querySelector('.file-upload-container');
+        const applicationId = container.dataset.applicationId;
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const documentsContainer = document.getElementById('documentsContainer');
+        const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+        const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFiles(fileInput.files);
+            }
+        });
+
+        function handleFiles(files) {
+            const formData = new FormData();
+            formData.append('jobApplicationId', applicationId);
+            
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            uploadProgress.classList.remove('d-none');
+            
+            fetch('/Files/UploadMultipleDocuments', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': antiForgeryToken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                uploadProgress.classList.add('d-none');
+                
+                if (data.success) {
+                    // Add uploaded documents to list
+                    data.documents.forEach(doc => {
+                        addDocumentToList(doc);
+                    });
+                    
+                    // Show errors if any
+                    if (data.errors && data.errors.length > 0) {
+                        alert('Some files could not be uploaded:\n' + data.errors.join('\n'));
+                    }
+                    
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'danger');
+                }
+                
+                // Clear file input
+                fileInput.value = '';
+            })
+            .catch(error => {
+                uploadProgress.classList.add('d-none');
+                showToast('An error occurred while uploading.', 'danger');
+                console.error('Upload error:', error);
+            });
+        }
+
+        function addDocumentToList(doc) {
+            if (noDocumentsMessage) {
+                noDocumentsMessage.classList.add('d-none');
+            }
+            documentsContainer.classList.remove('d-none');
+            
+            const item = document.createElement('div');
+            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.dataset.documentId = doc.applicationDocumentId;
+            
+            item.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi ${getFileIcon(doc.fileName)} fs-5 me-2"></i>
+                    <div>
+                        <span class="fw-medium">${doc.fileName}</span>
+                        <br>
+                        <small class="text-muted">${formatFileSize(doc.fileSize)} • Just now</small>
+                    </div>
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <a href="${doc.downloadUrl}" class="btn btn-outline-primary" title="Download">
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <button type="button" class="btn btn-outline-danger btn-delete-document" 
+                            data-id="${doc.applicationDocumentId}" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            documentsContainer.appendChild(item);
+        }
+
+        function getFileIcon(fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            switch (ext) {
+                case 'pdf': return 'bi-file-pdf text-danger';
+                case 'doc':
+                case 'docx': return 'bi-file-word text-primary';
+                case 'jpg':
+                case 'jpeg':
+                case 'png': return 'bi-file-image text-success';
+                default: return 'bi-file-earmark';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Delete document
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-delete-document')) {
+                const btn = e.target.closest('.btn-delete-document');
+                const docId = btn.dataset.id;
+                
+                if (confirm('Are you sure you want to delete this document?')) {
+                    fetch('/Files/DeleteDocument', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': antiForgeryToken
+                        },
+                        body: `id=${docId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const item = document.querySelector(`[data-document-id="${docId}"]`);
+                            if (item) {
+                                item.remove();
+                            }
+                            
+                            // Show no documents message if list is empty
+                            if (documentsContainer.children.length === 0) {
+                                if (noDocumentsMessage) {
+                                    noDocumentsMessage.classList.remove('d-none');
+                                }
+                                documentsContainer.classList.add('d-none');
+                            }
+                            
+                            showToast(data.message, 'success');
+                        } else {
+                            showToast(data.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        showToast('An error occurred.', 'danger');
+                        console.error('Delete error:', error);
+                    });
+                }
+            }
+        });
+
+        function showToast(message, type) {
+            // Use existing toast function if available, otherwise create simple alert
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+            } else {
+                const toastHtml = `
+                    <div class="toast align-items-center text-bg-${type} border-0 show" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                let toastContainer = document.getElementById('toastContainer');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toastContainer';
+                    toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toast = toastContainer.lastElementChild;
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+        }
+    })();
+</script>
+

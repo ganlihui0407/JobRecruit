@@ -1,0 +1,86 @@
+@model ResumeEducationViewModel
+@{
+    var isEdit = Model.ResumeEducationId != 0;
+    var title = isEdit ? "Edit Education" : "Add Education";
+    var icon = isEdit ? "bi-pencil-square" : "bi-plus-circle";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="JobSeekerProfiles" asp-action="Edit">Edit Profile</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@title</li>
+                </ol>
+            </nav>
+
+            <!-- Card Container -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi @icon me-2 text-primary"></i>@title
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="ResumeEducationId" />
+                        <input type="hidden" asp-for="JobSeekerProfileId" />
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="SchoolName" class="form-label">School/University <span class="text-danger">*</span></label>
+                                <input asp-for="SchoolName" class="form-control" placeholder="e.g., Harvard University" />
+                                <span asp-validation-for="SchoolName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Qualification" class="form-label">Qualification/Degree <span class="text-danger">*</span></label>
+                                <select asp-for="Qualification" class="form-select">
+                                    <option value="">Select qualification...</option>
+                                    @foreach (var q in Model.QualificationOptions)
+                                    {
+                                        <option value="@q" selected="@(Model.Qualification == q)">@q</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Qualification" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="FieldOfStudy" class="form-label">Field of Study</label>
+                                <input asp-for="FieldOfStudy" class="form-control" placeholder="e.g., Computer Science" />
+                                <span asp-validation-for="FieldOfStudy" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="StartYear" class="form-label">Start Year <span class="text-danger">*</span></label>
+                                <input asp-for="StartYear" type="number" class="form-control" min="1950" max="2100" placeholder="e.g., 2018" />
+                                <span asp-validation-for="StartYear" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="EndYear" class="form-label">End Year</label>
+                                <input asp-for="EndYear" type="number" class="form-control" min="1950" max="2100" placeholder="e.g., 2022" />
+                                <span asp-validation-for="EndYear" class="text-danger"></span>
+                                <small class="text-muted">Leave blank if currently studying</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-controller="JobSeekerProfiles" asp-action="Edit" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>@(isEdit ? "Update" : "Add") Education
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

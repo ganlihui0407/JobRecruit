@@ -1,0 +1,124 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 col-xl-4">
+            <!-- Page Header -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="bi bi-briefcase-fill" style="font-size: 3rem; color: var(--primary-color);"></i>
+                </div>
+                <h1 class="page-title mb-2">Welcome Back</h1>
+                <p class="helper-text mb-0">Sign in to continue to your account</p>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["WarningMessage"] != null)
+                    {
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["WarningMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["UnverifiedEmail"] != null)
+                    {
+                        var unverifiedEmail = TempData["UnverifiedEmail"] as string;
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Account Not Activated</strong>
+                            <p class="mb-2 mt-2">Please activate your account via the email sent to you.</p>
+                            <form asp-action="ResendActivation" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="email" value="@unverifiedEmail" />
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-envelope me-1"></i>Resend Activation Email
+                                </button>
+                            </form>
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="ReturnUrl" />
+
+                        <div class="mb-3">
+                            <label asp-for="EmailOrUsername" class="form-label">Email or Username</label>
+                            <input asp-for="EmailOrUsername" class="form-control" 
+                                   placeholder="Enter your email or username" autofocus />
+                            <span asp-validation-for="EmailOrUsername" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <input asp-for="Password" class="form-control" type="password" 
+                                       placeholder="Enter your password" />
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                    <i class="bi bi-eye" id="password-icon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
+                                <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                            </div>
+                            <a asp-action="ForgotPassword" class="small">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
+                            Sign In
+                        </button>
+
+                        <div class="text-center">
+                            <span class="text-muted">Don't have an account?</span>
+                            <a asp-action="Register" class="fw-semibold">Create one</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="text-center mt-4">
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Your data is secure and encrypted
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword() {
+            var field = document.getElementById('Password');
+            var icon = document.getElementById('password-icon');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+}

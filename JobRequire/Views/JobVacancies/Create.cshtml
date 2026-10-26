@@ -1,0 +1,205 @@
+@model JobVacancyViewModel
+@{
+    ViewData["Title"] = "Post a Job";
+}
+
+<div class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Employer" asp-action="Dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Post a Job</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title">Post a New Job</h1>
+                <p class="helper-text">
+                    Create a job posting to attract qualified candidates. 
+                    Fill in the details below to get started.
+                </p>
+            </div>
+
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="EmployerProfileId" />
+
+                <!-- Section 1: Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <span class="step-number me-2">1</span>
+                            <div>
+                                <h5 class="mb-0">Basic Information</h5>
+                                <small class="text-muted">Start with the job title and type</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label asp-for="JobTitle" class="form-label">
+                                    Job Title <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="JobTitle" class="form-control" 
+                                       placeholder="e.g., Senior Software Engineer, Marketing Manager" />
+                                <div class="form-text">Use a clear, specific title that candidates will search for</div>
+                                <span asp-validation-for="JobTitle" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Status" class="form-label">Status</label>
+                                <select asp-for="Status" asp-items="Model.StatusOptions" class="form-select"></select>
+                                <div class="form-text">Draft = not visible to job seekers</div>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label">
+                                    Category <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Category" asp-items="Model.CategoryOptions" class="form-select">
+                                    <option value="">Select a category</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="JobType" class="form-label">
+                                    Employment Type <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="JobType" asp-items="Model.JobTypeOptions" class="form-select">
+                                    <option value="">Select employment type</option>
+                                </select>
+                                <span asp-validation-for="JobType" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Location & Compensation -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <span class="step-number me-2">2</span>
+                            <div>
+                                <h5 class="mb-0">Location & Compensation</h5>
+                                <small class="text-muted">Where and how much</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Location" class="form-label">
+                                Location <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Location" class="form-control" 
+                                   placeholder="e.g., New York, NY or Remote" />
+                            <div class="form-text">Be specific to help candidates find relevant jobs</div>
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SalaryMin" class="form-label">Minimum Salary (Annual)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="SalaryMin" type="number" class="form-control" 
+                                           placeholder="e.g., 50000" />
+                                </div>
+                                <span asp-validation-for="SalaryMin" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SalaryMax" class="form-label">Maximum Salary (Annual)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="SalaryMax" type="number" class="form-control" 
+                                           placeholder="e.g., 80000" />
+                                </div>
+                                <span asp-validation-for="SalaryMax" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="form-text mb-3">
+                            <i class="bi bi-lightbulb me-1"></i>
+                            Tip: Jobs with salary ranges get 30% more applications
+                        </div>
+
+                        <div class="mb-0">
+                            <label asp-for="ClosingDate" class="form-label">Application Deadline</label>
+                            <input asp-for="ClosingDate" type="date" class="form-control" style="max-width: 250px;" />
+                            <div class="form-text">Optional - Leave empty if there's no deadline</div>
+                            <span asp-validation-for="ClosingDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Job Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <span class="step-number me-2">3</span>
+                            <div>
+                                <h5 class="mb-0">Job Details</h5>
+                                <small class="text-muted">Describe the role and what you're looking for</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label">
+                                Job Description <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="8" 
+                                      placeholder="Describe the role, responsibilities, and what a typical day looks like..."></textarea>
+                            <div class="form-text">
+                                Include: key responsibilities, team structure, growth opportunities
+                            </div>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-0">
+                            <label asp-for="Requirements" class="form-label">
+                                Requirements & Qualifications <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Requirements" class="form-control" rows="6" 
+                                      placeholder="List the skills, experience, and qualifications needed..."></textarea>
+                            <div class="form-text">
+                                Include: required skills, years of experience, education, certifications
+                            </div>
+                            <span asp-validation-for="Requirements" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card bg-warm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <p class="mb-0 text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    You can edit this job posting anytime after publishing.
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex gap-2 justify-content-md-end">
+                                    <a asp-controller="Employer" asp-action="Dashboard" class="btn btn-outline-secondary">
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-lg me-2"></i>Post Job
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

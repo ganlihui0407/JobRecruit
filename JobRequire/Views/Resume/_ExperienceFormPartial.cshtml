@@ -1,0 +1,71 @@
+@model ResumeExperienceViewModel
+
+<form asp-action="SaveExperience" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ResumeExperienceId" />
+    <input type="hidden" asp-for="JobSeekerProfileId" />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="JobTitle" class="form-label">Job Title <span class="text-danger">*</span></label>
+            <input asp-for="JobTitle" class="form-control" placeholder="e.g., Software Engineer" />
+            <span asp-validation-for="JobTitle" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="CompanyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+            <input asp-for="CompanyName" class="form-control" placeholder="e.g., Google Inc." />
+            <span asp-validation-for="CompanyName" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+            <input asp-for="StartDate" type="date" class="form-control" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="EndDate" class="form-label">End Date</label>
+            <input asp-for="EndDate" type="date" class="form-control" id="endDateInput" disabled="@Model.IsCurrentJob" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+                <input asp-for="IsCurrentJob" class="form-check-input" type="checkbox" id="isCurrentJob" />
+                <label class="form-check-label" for="isCurrentJob">
+                    Currently working here
+                </label>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="4" 
+                      placeholder="Describe your responsibilities, achievements, and key contributions..."></textarea>
+            <small class="text-muted">
+                Tip: Use bullet points to highlight key achievements. Include metrics where possible.
+            </small>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-2"></i>Save Experience
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('#isCurrentJob').on('change', function() {
+            $('#endDateInput').prop('disabled', this.checked);
+            if (this.checked) {
+                $('#endDateInput').val('');
+            }
+        });
+    });
+</script>
+

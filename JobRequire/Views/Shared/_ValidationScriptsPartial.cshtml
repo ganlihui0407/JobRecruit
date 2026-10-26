@@ -1,0 +1,9 @@
+﻿<script src="~/lib/jquery-validation/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    // Custom validator for MustBeTrue attribute
+    $.validator.addMethod("mustbetrue", function (value, element) {
+        return element.checked;
+    });
+    $.validator.unobtrusive.adapters.addBool("mustbetrue");
+</script>

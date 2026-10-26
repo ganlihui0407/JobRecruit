@@ -1,0 +1,394 @@
+@model JobSeekerProfileViewModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="py-4">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active">Edit Profile</li>
+            </ol>
+        </nav>
+        <h1 class="page-title mb-1">Edit Your Profile</h1>
+        <p class="helper-text mb-0">Keep your profile up-to-date to attract more employers</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Personal Information Card -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2" style="color: var(--primary-color);"></i>Personal Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="JobSeekerProfileId" />
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="ProfilePhoto" />
+
+                        <!-- Profile Photo -->
+                        <div class="text-center mb-4">
+                            @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                            {
+                                <img src="@Model.ProfilePhoto" alt="@Model.FullName" class="profile-avatar mb-2" />
+                            }
+                            else
+                            {
+                                <div class="profile-avatar-placeholder mx-auto mb-2">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            }
+                            <div class="small text-muted">Click below to change photo</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Full Name</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Your full name" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="+1 234 567 8900" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ProfilePhotoFile" class="form-label">Profile Photo</label>
+                            <input asp-for="ProfilePhotoFile" type="file" class="form-control" accept="image/*" />
+                            <div class="form-text">JPG, PNG, or GIF. Max 2MB.</div>
+                            <span asp-validation-for="ProfilePhotoFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Summary" class="form-label">Professional Summary</label>
+                            <textarea asp-for="Summary" class="form-control" rows="4" 
+                                      placeholder="Write a brief summary about yourself, your experience, and career goals..."></textarea>
+                            <div class="form-text">This appears at the top of your profile</div>
+                            <span asp-validation-for="Summary" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-lg me-2"></i>Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Sections -->
+        <div class="col-lg-8">
+            <!-- Education Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="bi bi-mortarboard me-2" style="color: var(--primary-color);"></i>Education
+                        </h5>
+                        <small class="text-muted">Add your educational background</small>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEducationModal">
+                        <i class="bi bi-plus-lg me-1"></i>Add
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (Model.Education.Any())
+                    {
+                        @foreach (var edu in Model.Education)
+                        {
+                            <div class="d-flex justify-content-between align-items-start mb-3 pb-3" style="border-bottom: 1px solid var(--border-light);">
+                                <div>
+                                    <h6 class="mb-1">@edu.Qualification @(!string.IsNullOrEmpty(edu.FieldOfStudy) ? $"in {edu.FieldOfStudy}" : "")</h6>
+                                    <p class="mb-1" style="color: var(--primary-color);">@edu.SchoolName</p>
+                                    <small class="text-muted">@edu.StartYear - @edu.EndYear</small>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="editEducation(@edu.ResumeEducationId)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <form asp-controller="ResumeEducations" asp-action="Delete" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@edu.ResumeEducationId" />
+                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this education?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-mortarboard" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <p class="mt-2 mb-0">No education added yet. Click "Add" to get started.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Experience Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="bi bi-briefcase me-2" style="color: var(--primary-color);"></i>Work Experience
+                        </h5>
+                        <small class="text-muted">Add your work history</small>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addExperienceModal">
+                        <i class="bi bi-plus-lg me-1"></i>Add
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (Model.Experience.Any())
+                    {
+                        @foreach (var exp in Model.Experience)
+                        {
+                            <div class="d-flex justify-content-between align-items-start mb-3 pb-3" style="border-bottom: 1px solid var(--border-light);">
+                                <div class="flex-grow-1 me-3">
+                                    <h6 class="mb-1">@exp.JobTitle</h6>
+                                    <p class="mb-1" style="color: var(--primary-color);">@exp.CompanyName</p>
+                                    <small class="text-muted">
+                                        @exp.StartDate?.ToString("MMM yyyy") - @(exp.EndDate?.ToString("MMM yyyy") ?? "Present")
+                                    </small>
+                                    @if (!string.IsNullOrEmpty(exp.Description))
+                                    {
+                                        <p class="mt-2 mb-0 small text-muted">@exp.Description</p>
+                                    }
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="editExperience(@exp.ResumeExperienceId)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <form asp-controller="ResumeExperiences" asp-action="Delete" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@exp.ResumeExperienceId" />
+                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this experience?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-briefcase" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <p class="mt-2 mb-0">No experience added yet. Click "Add" to get started.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Skills Section -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="bi bi-stars me-2" style="color: var(--primary-color);"></i>Skills
+                        </h5>
+                        <small class="text-muted">Highlight your key skills</small>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSkillModal">
+                        <i class="bi bi-plus-lg me-1"></i>Add
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (Model.Skills.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var skill in Model.Skills)
+                            {
+                                <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded" 
+                                     style="background: var(--bg-warm); border: 1px solid var(--border-color);">
+                                    <span class="fw-medium">@skill.SkillName</span>
+                                    @if (!string.IsNullOrEmpty(skill.SkillLevel))
+                                    {
+                                        <small class="text-muted">(@skill.SkillLevel)</small>
+                                    }
+                                    <form asp-controller="ResumeSkills" asp-action="Delete" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@skill.ResumeSkillId" />
+                                        <button type="submit" class="btn btn-link btn-sm p-0 text-muted" 
+                                                onclick="return confirm('Remove this skill?')" title="Remove skill">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-stars" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <p class="mt-2 mb-0">No skills added yet. Click "Add" to get started.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Education Modal -->
+<div class="modal fade" id="addEducationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="ResumeEducations" asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-mortarboard me-2" style="color: var(--primary-color);"></i>Add Education
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="JobSeekerProfileId" value="@Model.JobSeekerProfileId" />
+                    <div class="mb-3">
+                        <label class="form-label">School/University <span class="text-danger">*</span></label>
+                        <input type="text" name="SchoolName" class="form-control" required placeholder="e.g., Harvard University" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Qualification <span class="text-danger">*</span></label>
+                        <select name="Qualification" class="form-select" required>
+                            <option value="">Select qualification...</option>
+                            @foreach (var q in ResumeOptions.GetQualifications())
+                            {
+                                <option value="@q">@q</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Field of Study</label>
+                        <input type="text" name="FieldOfStudy" class="form-control" placeholder="e.g., Computer Science" />
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Start Year</label>
+                            <input type="number" name="StartYear" class="form-control" min="1950" max="2100" placeholder="2018" />
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">End Year</label>
+                            <input type="number" name="EndYear" class="form-control" min="1950" max="2100" placeholder="2022" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Add Education
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Experience Modal -->
+<div class="modal fade" id="addExperienceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="ResumeExperiences" asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-briefcase me-2" style="color: var(--primary-color);"></i>Add Experience
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="JobSeekerProfileId" value="@Model.JobSeekerProfileId" />
+                    <div class="mb-3">
+                        <label class="form-label">Company Name <span class="text-danger">*</span></label>
+                        <input type="text" name="CompanyName" class="form-control" required placeholder="e.g., Google" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Job Title <span class="text-danger">*</span></label>
+                        <input type="text" name="JobTitle" class="form-control" required placeholder="e.g., Software Engineer" />
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="StartDate" class="form-control" />
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="EndDate" class="form-control" id="expEndDate" />
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="IsCurrentJob" value="true" class="form-check-input" id="isCurrentJob" 
+                               onchange="document.getElementById('expEndDate').disabled = this.checked" />
+                        <label class="form-check-label" for="isCurrentJob">I currently work here</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="Description" class="form-control" rows="3" 
+                                  placeholder="Describe your responsibilities and achievements..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Add Experience
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Skill Modal -->
+<div class="modal fade" id="addSkillModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <form asp-controller="ResumeSkills" asp-action="Create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-stars me-2" style="color: var(--primary-color);"></i>Add Skill
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="JobSeekerProfileId" value="@Model.JobSeekerProfileId" />
+                    <div class="mb-3">
+                        <label class="form-label">Skill Name <span class="text-danger">*</span></label>
+                        <input type="text" name="SkillName" class="form-control" required placeholder="e.g., JavaScript" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Proficiency Level</label>
+                        <select name="SkillLevel" class="form-select">
+                            <option value="">Select level...</option>
+                            @foreach (var level in ResumeOptions.GetSkillLevels())
+                            {
+                                <option value="@level">@level</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Add Skill
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function editEducation(id) {
+            window.location.href = '@Url.Action("Edit", "ResumeEducations")/' + id;
+        }
+        function editExperience(id) {
+            window.location.href = '@Url.Action("Edit", "ResumeExperiences")/' + id;
+        }
+    </script>
+}

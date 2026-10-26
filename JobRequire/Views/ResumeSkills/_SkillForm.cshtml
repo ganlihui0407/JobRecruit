@@ -1,0 +1,79 @@
+@model ResumeSkillViewModel
+@{
+    var isEdit = Model.ResumeSkillId != 0;
+    var title = isEdit ? "Edit Skill" : "Add Skill";
+    var icon = isEdit ? "bi-pencil-square" : "bi-plus-circle";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="JobSeekerProfiles" asp-action="Edit">Edit Profile</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@title</li>
+                </ol>
+            </nav>
+
+            <!-- Card Container -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi @icon me-2 text-primary"></i>@title
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="ResumeSkillId" />
+                        <input type="hidden" asp-for="JobSeekerProfileId" />
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label asp-for="SkillName" class="form-label">Skill Name <span class="text-danger">*</span></label>
+                                <input asp-for="SkillName" class="form-control" placeholder="e.g., JavaScript, Project Management" />
+                                <span asp-validation-for="SkillName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="SkillLevel" class="form-label">Proficiency Level <span class="text-danger">*</span></label>
+                                <select asp-for="SkillLevel" class="form-select">
+                                    <option value="">Select level...</option>
+                                    @foreach (var level in Model.SkillLevelOptions)
+                                    {
+                                        <option value="@level" selected="@(Model.SkillLevel == level)">@level</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SkillLevel" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">
+                                    <h6 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>Proficiency Levels Guide</h6>
+                                    <ul class="mb-0 small">
+                                        <li><strong>Beginner:</strong> Basic understanding, limited practical experience</li>
+                                        <li><strong>Intermediate:</strong> Good working knowledge, can work independently</li>
+                                        <li><strong>Advanced:</strong> Deep expertise, can mentor others</li>
+                                        <li><strong>Expert:</strong> Industry-leading knowledge, thought leader</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-controller="JobSeekerProfiles" asp-action="Edit" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>@(isEdit ? "Update" : "Add") Skill
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

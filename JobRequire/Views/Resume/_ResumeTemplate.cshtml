@@ -1,0 +1,159 @@
+@model ResumeSnapshotViewModel
+@*
+    UNIFIED RESUME TEMPLATE
+    This is the SINGLE SOURCE OF TRUTH for resume display.
+    Used by: Preview, Print-Ready, and PDF generation.
+    
+    For Print/PDF rendering:
+    - Uses Base64-encoded image (ProfilePhotoBase64) for print compatibility
+    - Screen display uses relative URL (ProfilePhoto)
+    - CSS @media print rules handle switching between the two
+*@
+
+<div class="resume-card">
+    <div class="resume-body">
+        <!-- Header -->
+        <div class="resume-header">
+            @if (!string.IsNullOrEmpty(Model.ProfilePhoto) || !string.IsNullOrEmpty(Model.ProfilePhotoBase64))
+            {
+                @* Screen version - uses relative URL *@
+                @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                {
+                    <img src="@Model.ProfilePhoto" alt="@Model.FullName" class="resume-photo resume-photo-screen" />
+                }
+                @* Print version - uses Base64 for reliable rendering *@
+                @if (!string.IsNullOrEmpty(Model.ProfilePhotoBase64))
+                {
+                    <img src="@Model.ProfilePhotoBase64" alt="@Model.FullName" class="resume-photo resume-photo-print" />
+                }
+                else if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                {
+                    @* Fallback: use relative URL for print if no Base64 available *@
+                    <img src="@Model.ProfilePhoto" alt="@Model.FullName" class="resume-photo resume-photo-print" />
+                }
+            }
+            <h1 class="resume-name">@Model.FullName</h1>
+            <div class="resume-contact">
+                @if (!string.IsNullOrEmpty(Model.Email))
+                {
+                    <span class="resume-contact-item">
+                        <i class="bi bi-envelope"></i>
+                        <span>@Model.Email</span>
+                    </span>
+                }
+                @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                {
+                    <span class="resume-contact-item">
+                        <i class="bi bi-phone"></i>
+                        <span>@Model.PhoneNumber</span>
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- Professional Summary -->
+        @if (!string.IsNullOrEmpty(Model.Summary))
+        {
+            <section class="resume-section">
+                <h2 class="resume-section-title">
+                    <i class="bi bi-person-lines-fill"></i>
+                    Professional Summary
+                </h2>
+                <p class="resume-summary">@Model.Summary</p>
+            </section>
+        }
+
+        <!-- Work Experience -->
+        @if (Model.Experience.Count > 0)
+        {
+            <section class="resume-section">
+                <h2 class="resume-section-title">
+                    <i class="bi bi-briefcase"></i>
+                    Work Experience
+                </h2>
+                @foreach (var exp in Model.Experience)
+                {
+                    <div class="resume-item">
+                        <div class="resume-item-header">
+                            <div>
+                                <div class="resume-item-title">@exp.JobTitle</div>
+                                <div class="resume-item-subtitle">@exp.CompanyName</div>
+                            </div>
+                            <span class="resume-item-date">
+                                @(exp.StartDate.HasValue ? exp.StartDate.Value.ToString("MMM yyyy") : "N/A") - @(exp.EndDate.HasValue ? exp.EndDate.Value.ToString("MMM yyyy") : "Present")
+                            </span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(exp.Description))
+                        {
+                            <p class="resume-item-description">@exp.Description</p>
+                        }
+                    </div>
+                }
+            </section>
+        }
+
+        <!-- Education -->
+        @if (Model.Education.Count > 0)
+        {
+            <section class="resume-section">
+                <h2 class="resume-section-title">
+                    <i class="bi bi-mortarboard"></i>
+                    Education
+                </h2>
+                @foreach (var edu in Model.Education)
+                {
+                    <div class="resume-item education-item">
+                        <div class="resume-item-header">
+                            <div>
+                                <div class="resume-item-title">
+                                    @edu.Qualification
+                                    @if (!string.IsNullOrEmpty(edu.FieldOfStudy))
+                                    {
+                                        <text> in @edu.FieldOfStudy</text>
+                                    }
+                                </div>
+                                <div class="resume-item-subtitle">@edu.SchoolName</div>
+                            </div>
+                            <span class="resume-item-date">
+                                @edu.StartYear - @(edu.EndYear.HasValue ? edu.EndYear.ToString() : "Present")
+                            </span>
+                        </div>
+                    </div>
+                }
+            </section>
+        }
+
+        <!-- Skills -->
+        @if (Model.Skills.Count > 0)
+        {
+            <section class="resume-section">
+                <h2 class="resume-section-title">
+                    <i class="bi bi-star"></i>
+                    Skills
+                </h2>
+                <div class="resume-skills-grid">
+                    @foreach (var skill in Model.Skills)
+                    {
+                        var levelClass = skill.SkillLevel?.ToLower() switch
+                        {
+                            "expert" => "expert",
+                            "advanced" => "advanced",
+                            "intermediate" => "intermediate",
+                            _ => "beginner"
+                        };
+                        <span class="resume-skill-tag @levelClass">
+                            @skill.SkillName
+                            <span class="resume-skill-level">(@skill.SkillLevel)</span>
+                        </span>
+                    }
+                </div>
+            </section>
+        }
+
+        <!-- Footer -->
+        <div class="resume-footer">
+            <p>Generated on @Model.GeneratedAt.ToString("MMMM dd, yyyy")</p>
+        </div>
+    </div>
+</div>
+

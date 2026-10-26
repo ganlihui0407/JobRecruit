@@ -1,0 +1,316 @@
+@model CompanyListViewModel
+@{
+    ViewData["Title"] = "Companies";
+}
+
+<div class="py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">
+                <i class="bi bi-building me-2"></i>Companies
+            </h1>
+            <p class="text-secondary mb-0">Discover employers and explore their job opportunities</p>
+        </div>
+        @if (User.IsInRole("Employer"))
+        {
+            <a asp-controller="EmployerProfiles" asp-action="MyProfile" class="btn btn-primary">
+                <i class="bi bi-gear me-2"></i>My Company Profile
+            </a>
+        }
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control" name="searchTerm" value="@Model.SearchTerm" 
+                               placeholder="Search companies by name, description, or industry..." />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="industryFilter" class="form-select">
+                        <option value="">All Industries</option>
+                        @foreach (var industry in Model.Industries)
+                        {
+                            <option value="@industry" selected="@(Model.IndustryFilter == industry)">@industry</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.IndustryFilter))
+    {
+        <div class="d-flex align-items-center mb-3">
+            <span class="text-muted me-2">
+                Found @Model.TotalCount @(Model.TotalCount == 1 ? "company" : "companies")
+            </span>
+            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <span class="badge bg-secondary me-2">
+                    Search: @Model.SearchTerm
+                    <a asp-action="Index" asp-route-industryFilter="@Model.IndustryFilter" class="text-white ms-1">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </span>
+            }
+            @if (!string.IsNullOrEmpty(Model.IndustryFilter))
+            {
+                <span class="badge bg-secondary me-2">
+                    Industry: @Model.IndustryFilter
+                    <a asp-action="Index" asp-route-searchTerm="@Model.SearchTerm" class="text-white ms-1">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </span>
+            }
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i>Clear All
+            </a>
+        </div>
+    }
+
+    <!-- Companies Grid -->
+    @if (Model.Companies.Any())
+    {
+        <div class="row g-4">
+            @foreach (var company in Model.Companies)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 company-card">
+                        <div class="card-body">
+                            <!-- Company Header -->
+                            <div class="d-flex align-items-center mb-3">
+                                @if (!string.IsNullOrEmpty(company.CompanyLogo))
+                                {
+                                    <img src="@company.CompanyLogo" alt="@company.CompanyName" 
+                                         class="rounded me-3" style="width: 64px; height: 64px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 64px; height: 64px;">
+                                        <i class="bi bi-building text-primary fs-3"></i>
+                                    </div>
+                                }
+                                <div class="flex-grow-1 min-width-0">
+                                    <h5 class="mb-1 text-truncate">
+                                        <a asp-action="Details" asp-route-id="@company.EmployerProfileId" 
+                                           class="text-decoration-none text-dark stretched-link">
+                                            @company.CompanyName
+                                        </a>
+                                    </h5>
+                                    @if (!string.IsNullOrEmpty(company.Industry))
+                                    {
+                                        <span class="badge bg-secondary">@company.Industry</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Company Description -->
+                            @if (!string.IsNullOrEmpty(company.CompanyDescription))
+                            {
+                                <p class="text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                    @company.CompanyDescription
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-muted small mb-3 fst-italic">No description available</p>
+                            }
+
+                            <!-- Company Footer -->
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <span class="@(company.OpenJobsCount > 0 ? "text-success" : "text-muted")">
+                                    <i class="bi bi-briefcase me-1"></i>
+                                    @company.OpenJobsCount @(company.OpenJobsCount == 1 ? "open position" : "open positions")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a asp-action="Details" asp-route-id="@company.EmployerProfileId" 
+                               class="btn btn-outline-primary btn-sm w-100">
+                                View Company <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-5" aria-label="Companies pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index" 
+                           asp-route-pageNumber="@(Model.PageNumber - 1)"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-industryFilter="@Model.IndustryFilter"
+                           aria-label="Previous">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    @{
+                        var startPage = Math.Max(1, Model.PageNumber - 2);
+                        var endPage = Math.Min(Model.TotalPages, Model.PageNumber + 2);
+                    }
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-pageNumber="1"
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-industryFilter="@Model.IndustryFilter">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-pageNumber="@i"
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-industryFilter="@Model.IndustryFilter">@i</a>
+                        </li>
+                    }
+                    @if (endPage < Model.TotalPages)
+                    {
+                        @if (endPage < Model.TotalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-pageNumber="@Model.TotalPages"
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-industryFilter="@Model.IndustryFilter">@Model.TotalPages</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index" 
+                           asp-route-pageNumber="@(Model.PageNumber + 1)"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-industryFilter="@Model.IndustryFilter"
+                           aria-label="Next">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-building display-1 text-muted"></i>
+            </div>
+            <h4 class="text-muted">No companies found</h4>
+            <p class="text-secondary mb-4">
+                @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.IndustryFilter))
+                {
+                    <span>Try adjusting your search criteria or clear the filters.</span>
+                }
+                else
+                {
+                    <span>No employers have registered yet. Check back soon!</span>
+                }
+            </p>
+            @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.IndustryFilter))
+            {
+                <a asp-action="Index" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Clear Filters
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .company-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+        .company-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .min-width-0 {
+            min-width: 0;
+        }
+    </style>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

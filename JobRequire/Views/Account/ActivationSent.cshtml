@@ -1,0 +1,93 @@
+@{
+    ViewData["Title"] = "Activation Email Sent";
+    var email = ViewBag.Email as string;
+}
+
+<div class="py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-envelope-check display-1 text-primary"></i>
+                    </div>
+                    <h2 class="fw-bold mb-3">Check Your Email</h2>
+                    
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                        </div>
+                    }
+                    
+                    <p class="text-secondary mb-3">
+                        We've sent an activation link to:
+                    </p>
+                    @if (!string.IsNullOrEmpty(email))
+                    {
+                        <p class="fw-bold text-primary mb-4">@email</p>
+                    }
+                    
+                    <div class="alert alert-warning text-start mb-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> The activation link expires in <strong>2 minutes</strong>.
+                        <br>
+                        <small class="text-muted">Please check your inbox and spam folder.</small>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <p class="text-secondary mb-3">Didn't receive the email?</p>
+                    
+                    @if (!string.IsNullOrEmpty(email))
+                    {
+                        <form asp-action="ResendActivation" method="post" class="mb-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="email" value="@email" />
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-repeat me-2"></i>Resend Activation Email
+                            </button>
+                        </form>
+                    }
+
+                    <div class="mt-4">
+                        <a asp-action="Login" class="text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-info-circle text-info me-2 mt-1"></i>
+                        <div class="small text-secondary">
+                            <strong>Tips:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li>Check your spam/junk folder</li>
+                                <li>Make sure you entered the correct email address</li>
+                                <li>If the link expires, click "Resend Activation Email"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+

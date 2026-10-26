@@ -1,0 +1,77 @@
+@model VerifyEmailViewModel
+@{
+    ViewData["Title"] = "Email Verification";
+}
+
+<div class="py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    @if (Model.Success)
+                    {
+                        <div class="mb-4">
+                            <i class="bi bi-check-circle display-1 text-success"></i>
+                        </div>
+                        <h2 class="fw-bold mb-3">Email Verified!</h2>
+                        <p class="text-secondary mb-4">@Model.Message</p>
+                        <a asp-action="Login" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In Now
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="mb-4">
+                            @if (Model.ShowResendButton)
+                            {
+                                <i class="bi bi-clock-history display-1 text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle display-1 text-danger"></i>
+                            }
+                        </div>
+                        <h2 class="fw-bold mb-3">
+                            @if (Model.ShowResendButton)
+                            {
+                                <text>Activation Link Expired</text>
+                            }
+                            else
+                            {
+                                <text>Verification Failed</text>
+                            }
+                        </h2>
+                        <p class="text-secondary mb-4">@Model.Message</p>
+                        
+                        @if (Model.ShowResendButton && !string.IsNullOrEmpty(Model.Email))
+                        {
+                            <div class="alert alert-info text-start mb-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Note:</strong> Activation links expire after 2 minutes for security reasons.
+                            </div>
+                            
+                            <form asp-action="ResendActivation" method="post" class="mb-3">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="email" value="@Model.Email" />
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-envelope me-2"></i>Resend Activation Email
+                                </button>
+                            </form>
+                            
+                            <hr class="my-4">
+                        }
+                        
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a asp-action="Login" class="btn btn-outline-primary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Go to Login
+                            </a>
+                            <a asp-action="Register" class="btn btn-outline-secondary">
+                                <i class="bi bi-person-plus me-2"></i>Register Again
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

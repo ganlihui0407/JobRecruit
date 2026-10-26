@@ -1,0 +1,76 @@
+@model List<ResumeExperienceViewModel>
+
+@if (Model.Count == 0)
+{
+    <div class="text-center py-5">
+        <i class="bi bi-briefcase display-4 text-muted"></i>
+        <p class="text-muted mt-2">No work experience added yet.</p>
+        <p class="text-muted small">Add your professional experience to showcase your career history.</p>
+    </div>
+}
+else
+{
+    <div class="list-group list-group-flush">
+        @foreach (var item in Model)
+        {
+            <div class="list-group-item px-0">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="bi bi-briefcase text-primary me-2"></i>
+                            <h6 class="mb-0 fw-bold">@item.JobTitle</h6>
+                            @if (item.IsCurrentJob)
+                            {
+                                <span class="badge bg-success ms-2">Current</span>
+                            }
+                        </div>
+                        <p class="mb-1 text-muted">@item.CompanyName</p>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>
+                            @(item.StartDate.HasValue ? item.StartDate.Value.ToString("MMM yyyy") : "N/A") - @(item.EndDate.HasValue ? item.EndDate.Value.ToString("MMM yyyy") : "Present")
+                            @if (item.StartDate.HasValue)
+                            {
+                                <span class="ms-2">
+                                    (@CalculateDuration(item.StartDate.Value, item.EndDate))
+                                </span>
+                            }
+                        </small>
+                        @if (!string.IsNullOrEmpty(item.Description))
+                        {
+                            <p class="mb-0 mt-2 small text-muted">
+                                @(item.Description.Length > 200 ? item.Description.Substring(0, 200) + "..." : item.Description)
+                            </p>
+                        }
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary btn-edit-experience" data-id="@item.ResumeExperienceId" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-delete-experience" data-id="@item.ResumeExperienceId" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    string CalculateDuration(DateTime start, DateTime? end)
+    {
+        var endDate = end ?? DateTime.Now;
+        var span = endDate - start;
+        var years = (int)(span.TotalDays / 365);
+        var months = (int)((span.TotalDays % 365) / 30);
+        
+        if (years > 0 && months > 0)
+            return $"{years} yr {months} mo";
+        if (years > 0)
+            return $"{years} yr";
+        if (months > 0)
+            return $"{months} mo";
+        return "< 1 mo";
+    }
+}
+

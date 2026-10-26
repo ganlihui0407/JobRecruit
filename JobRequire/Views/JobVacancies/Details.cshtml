@@ -1,0 +1,267 @@
+@model JobVacancyViewModel
+@{
+    ViewData["Title"] = Model.JobTitle;
+    var hasApplied = ViewBag.HasApplied ?? false;
+    var isBookmarked = ViewBag.IsBookmarked ?? false;
+}
+
+<div class="py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Jobs</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index" asp-route-categoryFilter="@Model.Category">@Model.Category</a></li>
+            <li class="breadcrumb-item active">@Model.JobTitle</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Job Header Card -->
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-4">
+                        @if (!string.IsNullOrEmpty(Model.CompanyLogo))
+                        {
+                            <img src="@Model.CompanyLogo" alt="@Model.CompanyName" 
+                                 class="rounded me-4" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--border-light);" />
+                        }
+                        else
+                        {
+                            <div class="rounded d-flex align-items-center justify-content-center me-4" 
+                                 style="width: 80px; height: 80px; background: var(--bg-warm);">
+                                <i class="bi bi-building" style="font-size: 2rem; color: var(--primary-color);"></i>
+                            </div>
+                        }
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <div>
+                                    <h1 class="page-title mb-2">@Model.JobTitle</h1>
+                                    <p class="mb-0">
+                                        <a asp-controller="EmployerProfiles" asp-action="Details" asp-route-id="@Model.EmployerProfileId" 
+                                           class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
+                                            @Model.CompanyName
+                                        </a>
+                                    </p>
+                                </div>
+                                <span class="badge @(Model.Status == "Open" ? "bg-success" : Model.Status == "Closed" ? "bg-danger" : "bg-secondary")" 
+                                      style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                    @Model.Status
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Info Pills -->
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-geo-alt me-2" style="color: var(--primary-color);"></i>
+                            <span>@Model.Location</span>
+                        </div>
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-clock me-2" style="color: var(--primary-color);"></i>
+                            <span>@Model.JobType</span>
+                        </div>
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-tag me-2" style="color: var(--primary-color);"></i>
+                            <span>@Model.Category</span>
+                        </div>
+                    </div>
+
+                    <!-- Salary Highlight -->
+                    @if (Model.SalaryMin.HasValue || Model.SalaryMax.HasValue)
+                    {
+                        <div class="p-3 rounded" style="background: linear-gradient(135deg, var(--bg-warm) 0%, rgba(91, 138, 114, 0.1) 100%); border: 1px solid var(--success-color);">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-cash-stack me-2" style="font-size: 1.5rem; color: var(--success-color);"></i>
+                                <div>
+                                    <small class="text-muted d-block">Annual Salary Range</small>
+                                    <strong style="font-size: 1.25rem; color: var(--success-color);">
+                                        RM @(Model.SalaryMin?.ToString("N0") ?? "Negotiable") - RM @(Model.SalaryMax?.ToString("N0") ?? "Negotiable")
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Job Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-text me-2" style="color: var(--primary-color);"></i>
+                        Job Description
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div style="white-space: pre-line; line-height: 1.8;">@Model.Description</div>
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            @if (!string.IsNullOrEmpty(Model.Requirements))
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-check me-2" style="color: var(--primary-color);"></i>
+                            Requirements & Qualifications
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="white-space: pre-line; line-height: 1.8;">@Model.Requirements</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Apply Card -->
+            <div class="card mb-4" style="border: 2px solid var(--primary-light);">
+                <div class="card-body p-4">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (User.IsInRole("JobSeeker"))
+                        {
+                            @if (Model.Status == "Open")
+                            {
+                                @if (hasApplied)
+                                {
+                                    <div class="text-center mb-3">
+                                        <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--success-color);"></i>
+                                        <h5 class="mt-2 mb-1">Application Submitted</h5>
+                                        <p class="text-muted small mb-0">You've already applied for this position</p>
+                                    </div>
+                                    <a asp-controller="JobApplications" asp-action="MyApplications" class="btn btn-outline-primary w-100">
+                                        <i class="bi bi-file-earmark-text me-2"></i>View My Applications
+                                    </a>
+                                }
+                                else
+                                {
+                                    <h5 class="mb-3 text-center">Interested in this role?</h5>
+                                    <form asp-controller="JobApplications" asp-action="Apply" method="post" enctype="multipart/form-data">
+                                        <input type="hidden" name="jobVacancyId" value="@Model.JobVacancyId" />
+                                        <div class="mb-3">
+                                            <label class="form-label small">Additional Document (Optional)</label>
+                                            <input type="file" name="additionalDocument" class="form-control" accept=".pdf,.doc,.docx" />
+                                            <div class="form-text">Cover letter, portfolio, etc.</div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-send me-2"></i>Apply Now
+                                        </button>
+                                    </form>
+                                }
+
+                                <hr class="my-3" />
+
+                                <button type="button" 
+                                        class="btn @(isBookmarked ? "btn-warning" : "btn-outline-secondary") w-100 btn-bookmark-detail @(isBookmarked ? "bookmarked" : "")" 
+                                        data-job-id="@Model.JobVacancyId"
+                                        title="@(isBookmarked ? "Remove from saved jobs" : "Save this job for later")">
+                                    <i class="bi @(isBookmarked ? "bi-bookmark-fill" : "bi-bookmark") me-2"></i>
+                                    @(isBookmarked ? "Saved" : "Save for Later")
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="text-center">
+                                    <i class="bi bi-x-circle" style="font-size: 3rem; color: var(--text-muted);"></i>
+                                    <h5 class="mt-2 mb-1">Position Closed</h5>
+                                    <p class="text-muted small mb-3">This job is no longer accepting applications</p>
+                                    <a asp-action="Index" class="btn btn-outline-primary w-100">
+                                        <i class="bi bi-search me-2"></i>Browse Other Jobs
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else if (User.IsInRole("Employer") || User.IsInRole("Admin"))
+                        {
+                            <h5 class="mb-3">Manage This Job</h5>
+                            <div class="d-grid gap-2">
+                                <a asp-action="Edit" asp-route-id="@Model.JobVacancyId" class="btn btn-primary">
+                                    <i class="bi bi-pencil me-2"></i>Edit Job
+                                </a>
+                                <a asp-controller="JobApplications" asp-action="Index" asp-route-jobVacancyId="@Model.JobVacancyId" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-people me-2"></i>View Applications (@Model.ApplicationsCount)
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.JobVacancyId" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash me-2"></i>Delete Job
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                            <h5 class="mt-2 mb-1">Ready to Apply?</h5>
+                            <p class="text-muted small mb-3">Sign in or create an account to apply for this position</p>
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-person-plus me-2"></i>Create Account
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Job Details Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2" style="color: var(--primary-color);"></i>
+                        Job Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-start mb-3 pb-3" style="border-bottom: 1px solid var(--border-light);">
+                            <i class="bi bi-calendar-event me-3 mt-1" style="color: var(--primary-color);"></i>
+                            <div>
+                                <small class="text-muted d-block">Posted</small>
+                                <span>@Model.PublishDate.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                        </li>
+                        @if (Model.ClosingDate.HasValue)
+                        {
+                            <li class="d-flex align-items-start mb-3 pb-3" style="border-bottom: 1px solid var(--border-light);">
+                                <i class="bi bi-calendar-x me-3 mt-1" style="color: var(--danger-color);"></i>
+                                <div>
+                                    <small class="text-muted d-block">Application Deadline</small>
+                                    <span>@Model.ClosingDate.Value.ToString("MMMM dd, yyyy")</span>
+                                </div>
+                            </li>
+                        }
+                        <li class="d-flex align-items-start mb-3 pb-3" style="border-bottom: 1px solid var(--border-light);">
+                            <i class="bi bi-briefcase me-3 mt-1" style="color: var(--primary-color);"></i>
+                            <div>
+                                <small class="text-muted d-block">Employment Type</small>
+                                <span>@Model.JobType</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start mb-3 pb-3" style="border-bottom: 1px solid var(--border-light);">
+                            <i class="bi bi-tag me-3 mt-1" style="color: var(--primary-color);"></i>
+                            <div>
+                                <small class="text-muted d-block">Category</small>
+                                <span>@Model.Category</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <i class="bi bi-geo-alt me-3 mt-1" style="color: var(--primary-color);"></i>
+                            <div>
+                                <small class="text-muted d-block">Location</small>
+                                <span>@Model.Location</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,126 @@
+@model List<JobRequire.Services.ChatThreadSummary>
+@{
+    ViewData["Title"] = "Chat Inbox";
+    var userRole = ViewBag.UserRole as string;
+}
+
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-chat-dots me-2"></i>Chat Inbox
+            </h2>
+            <p class="text-secondary mb-0">Your conversations with @(userRole == "JobSeeker" ? "employers" : "applicants")</p>
+        </div>
+        @if (Model.Any(m => m.UnreadCount > 0))
+        {
+            <span class="badge bg-danger fs-6">
+                @Model.Sum(m => m.UnreadCount) unread
+            </span>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-chat-square-text display-1 text-secondary mb-3"></i>
+                <h4 class="text-secondary">No conversations yet</h4>
+                <p class="text-muted mb-0">
+                    @if (userRole == "JobSeeker")
+                    {
+                        <text>Your chats with employers will appear here once your applications are reviewed.</text>
+                    }
+                    else
+                    {
+                        <text>Your chats with applicants will appear here once you review their applications.</text>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="list-group list-group-flush">
+                @foreach (var thread in Model)
+                {
+                    var hasUnread = thread.UnreadCount > 0;
+                    <a asp-controller="Application" asp-action="Chat" asp-route-applicationId="@thread.JobApplicationId" 
+                       class="list-group-item list-group-item-action @(hasUnread ? "bg-light" : "")">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div class="flex-grow-1 me-3">
+                                <div class="d-flex align-items-center mb-1">
+                                    @if (hasUnread)
+                                    {
+                                        <span class="badge bg-danger rounded-pill me-2">@thread.UnreadCount</span>
+                                    }
+                                    <h6 class="mb-0 @(hasUnread ? "fw-bold" : "")">
+                                        @thread.JobTitle
+                                    </h6>
+                                </div>
+                                <p class="text-secondary mb-1 small">
+                                    <i class="bi bi-building me-1"></i>@thread.CompanyName
+                                </p>
+                                @if (!string.IsNullOrEmpty(thread.LastMessage))
+                                {
+                                    <p class="mb-0 text-muted small text-truncate" style="max-width: 400px;">
+                                        @(thread.LastMessage.Length > 80 ? thread.LastMessage.Substring(0, 80) + "..." : thread.LastMessage)
+                                    </p>
+                                }
+                            </div>
+                            <div class="text-end">
+                                @if (thread.LastMessageTime.HasValue)
+                                {
+                                    <small class="text-muted">@GetTimeAgo(thread.LastMessageTime.Value)</small>
+                                }
+                                <div class="mt-1">
+                                    <span class="badge @GetStatusBadgeClass(thread.ApplicationStatus)">
+                                        @thread.ApplicationStatus
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var span = DateTime.UtcNow - dateTime;
+
+        if (span.TotalDays >= 30)
+            return $"{(int)(span.TotalDays / 30)}mo ago";
+        if (span.TotalDays >= 7)
+            return $"{(int)(span.TotalDays / 7)}w ago";
+        if (span.TotalDays >= 1)
+            return $"{(int)span.TotalDays}d ago";
+        if (span.TotalHours >= 1)
+            return $"{(int)span.TotalHours}h ago";
+        if (span.TotalMinutes >= 1)
+            return $"{(int)span.TotalMinutes}m ago";
+        return "Just now";
+    }
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "pending" => "bg-secondary",
+            "reviewed" => "bg-info",
+            "shortlisted" => "bg-primary",
+            "interview" => "bg-warning text-dark",
+            "offered" => "bg-success",
+            "hired" => "bg-success",
+            "rejected" => "bg-danger",
+            "withdrawn" => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+

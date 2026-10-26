@@ -1,0 +1,196 @@
+@model JobRequire.ViewModels.CreateReviewViewModel
+@{
+    ViewData["Title"] = $"Write a Review - {Model.CompanyName}";
+}
+
+<div class="py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Companies" asp-action="Index"><i class="bi bi-building me-1"></i>Companies</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Companies" asp-action="Details" asp-route-id="@Model.EmployerProfileId">@Model.CompanyName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="Index" asp-route-employerProfileId="@Model.EmployerProfileId">Reviews</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Write Review</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil-square me-2 text-primary"></i>Write a Review for @Model.CompanyName
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" asp-route-employerProfileId="@Model.EmployerProfileId" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="EmployerProfileId" />
+                        <input type="hidden" asp-for="CompanyName" />
+
+                        <!-- Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Your Rating <span class="text-danger">*</span></label>
+                            <div class="rating-input" id="ratingContainer">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <input type="radio" name="Rating" value="@i" id="rating@(i)" class="d-none" />
+                                    <label for="rating@(i)" class="rating-star fs-2 me-1" data-rating="@i">
+                                        <i class="bi bi-star"></i>
+                                    </label>
+                                }
+                            </div>
+                            <span asp-validation-for="Rating" class="text-danger"></span>
+                            <small class="text-muted d-block mt-1">Click to select your rating (1 = Poor, 5 = Excellent)</small>
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label asp-for="Comment" class="form-label fw-semibold">Your Review <span class="text-danger">*</span></label>
+                            <textarea asp-for="Comment" class="form-control" rows="6" 
+                                      placeholder="Share your experience with this company. What did you like or dislike? How was the application process, communication, or work environment?"></textarea>
+                            <span asp-validation-for="Comment" class="text-danger"></span>
+                            <small class="text-muted">
+                                <span id="charCount">0</span>/2000 characters (minimum 10)
+                            </small>
+                        </div>
+
+                        <!-- Guidelines -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Review Guidelines</h6>
+                            <ul class="mb-0 small">
+                                <li>Be honest and constructive in your feedback</li>
+                                <li>Focus on your personal experience with the company</li>
+                                <li>Avoid including personal information or inappropriate content</li>
+                                <li>Your review will be visible to everyone</li>
+                            </ul>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>Submit Review
+                            </button>
+                            <a asp-action="Index" asp-route-employerProfileId="@Model.EmployerProfileId" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .rating-star {
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .rating-star:hover,
+        .rating-star.hovered,
+        .rating-star.selected {
+            color: #ffc107;
+        }
+        .rating-star.selected i {
+            font-weight: bold;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Rating stars interaction
+            const stars = document.querySelectorAll('.rating-star');
+            const radioButtons = document.querySelectorAll('input[name="Rating"]');
+            
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    highlightStars(rating, 'hovered');
+                });
+                
+                star.addEventListener('mouseleave', function() {
+                    // Restore selected state
+                    const selectedRating = getSelectedRating();
+                    clearHighlight('hovered');
+                    if (selectedRating > 0) {
+                        highlightStars(selectedRating, 'selected');
+                    }
+                });
+                
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    selectRating(rating);
+                });
+            });
+            
+            function highlightStars(rating, className) {
+                stars.forEach(s => {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= rating) {
+                        s.classList.add(className);
+                        s.querySelector('i').className = 'bi bi-star-fill';
+                    }
+                });
+            }
+            
+            function clearHighlight(className) {
+                stars.forEach(s => {
+                    s.classList.remove(className);
+                    if (!s.classList.contains('selected')) {
+                        s.querySelector('i').className = 'bi bi-star';
+                    }
+                });
+            }
+            
+            function selectRating(rating) {
+                clearHighlight('selected');
+                clearHighlight('hovered');
+                stars.forEach(s => {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= rating) {
+                        s.classList.add('selected');
+                        s.querySelector('i').className = 'bi bi-star-fill';
+                    } else {
+                        s.querySelector('i').className = 'bi bi-star';
+                    }
+                });
+                document.getElementById('rating' + rating).checked = true;
+            }
+            
+            function getSelectedRating() {
+                for (const radio of radioButtons) {
+                    if (radio.checked) {
+                        return parseInt(radio.value);
+                    }
+                }
+                return 0;
+            }
+            
+            // Character counter
+            const commentTextarea = document.getElementById('Comment');
+            const charCount = document.getElementById('charCount');
+            
+            commentTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+            
+            // Initialize char count
+            charCount.textContent = commentTextarea.value.length;
+        });
+    </script>
+}
+
+
+
